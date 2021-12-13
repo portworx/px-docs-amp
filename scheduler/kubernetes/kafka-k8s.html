@@ -1,0 +1,4036 @@
+<!doctype html>
+<html amp lang="en">
+    <head>
+        <meta charset="utf-8">
+
+        <title>Deploy Apache Kafka and Zookeeper with Portworx on Kubernetes</title>
+
+        <link rel="amphtml" href="https://amp-docs.portworx.com/scheduler/kubernetes/kafka-k8s.html">
+        <link rel="canonical" href="https://docs.portworx.com/scheduler/kubernetes/kafka-k8s.html">
+
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1">
+
+        <style amp-custom>
+            html{font-family:sans-serif;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}body{margin:0}article,aside,details,figcaption,figure,footer,header,hgroup,main,menu,nav,section,summary{display:block}audio,canvas,progress,video{display:inline-block;vertical-align:baseline}audio:not([controls]){display:none;height:0}[hidden],template{display:none}a{background-color:transparent}a:active,a:hover{outline:0}abbr[title]{border-bottom:1px dotted}b,strong{font-weight:bold}dfn{font-style:italic}h1{font-size:2em;margin:0.67em 0}mark{background:#ff0;color:#000}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sup{top:-0.5em}sub{bottom:-0.25em}img{border:0}svg:not(:root){overflow:hidden}figure{margin:1em 40px}hr{-webkit-box-sizing:content-box;-moz-box-sizing:content-box;box-sizing:content-box;height:0}pre{overflow:auto}code,kbd,pre,samp{font-family:monospace, monospace;font-size:1em}button,input,optgroup,select,textarea{color:inherit;font:inherit;margin:0}button{overflow:visible}button,select{text-transform:none}button,html input[type="button"],input[type="reset"],input[type="submit"]{-webkit-appearance:button;cursor:pointer}button[disabled],html input[disabled]{cursor:default}button::-moz-focus-inner,input::-moz-focus-inner{border:0;padding:0}input{line-height:normal}input[type="checkbox"],input[type="radio"]{-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;padding:0}input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-outer-spin-button{height:auto}input[type="search"]{-webkit-appearance:textfield;-webkit-box-sizing:content-box;-moz-box-sizing:content-box;box-sizing:content-box}input[type="search"]::-webkit-search-cancel-button,input[type="search"]::-webkit-search-decoration{-webkit-appearance:none}fieldset{border:1px solid #c0c0c0;margin:0 2px;padding:0.35em 0.625em 0.75em}legend{border:0;padding:0}textarea{overflow:auto}optgroup{font-weight:bold}table{border-collapse:collapse;border-spacing:0}td,th{padding:0}*{-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box}*:before,*:after{-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box}html{font-size:10px;-webkit-tap-highlight-color:rgba(0,0,0,0)}body{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:14px;line-height:1.42857143;color:#333;background-color:#fff}input,button,select,textarea{font-family:inherit;font-size:inherit;line-height:inherit}a{color:#337ab7;text-decoration:none}a:hover,a:focus{color:#23527c;text-decoration:underline}a:focus{outline:5px auto -webkit-focus-ring-color;outline-offset:-2px}figure{margin:0}img{vertical-align:middle}.img-responsive{display:block;max-width:100%;height:auto}.img-rounded{border-radius:6px}.img-thumbnail{padding:4px;line-height:1.42857143;background-color:#fff;border:1px solid #ddd;border-radius:4px;-webkit-transition:all .2s ease-in-out;-o-transition:all .2s ease-in-out;transition:all .2s ease-in-out;display:inline-block;max-width:100%;height:auto}.img-circle{border-radius:50%}hr{margin-top:20px;margin-bottom:20px;border:0;border-top:1px solid #eee}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0, 0, 0, 0);border:0}.sr-only-focusable:active,.sr-only-focusable:focus{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}[role="button"]{cursor:pointer}h1,h2,h3,h4,h5,h6,.h1,.h2,.h3,.h4,.h5,.h6{font-family:inherit;font-weight:500;line-height:1.1;color:inherit}h1 small,h2 small,h3 small,h4 small,h5 small,h6 small,.h1 small,.h2 small,.h3 small,.h4 small,.h5 small,.h6 small,h1 .small,h2 .small,h3 .small,h4 .small,h5 .small,h6 .small,.h1 .small,.h2 .small,.h3 .small,.h4 .small,.h5 .small,.h6 .small{font-weight:normal;line-height:1;color:#777}h1,.h1,h2,.h2,h3,.h3{margin-top:20px;margin-bottom:10px}h1 small,.h1 small,h2 small,.h2 small,h3 small,.h3 small,h1 .small,.h1 .small,h2 .small,.h2 .small,h3 .small,.h3 .small{font-size:65%}h4,.h4,h5,.h5,h6,.h6{margin-top:10px;margin-bottom:10px}h4 small,.h4 small,h5 small,.h5 small,h6 small,.h6 small,h4 .small,.h4 .small,h5 .small,.h5 .small,h6 .small,.h6 .small{font-size:75%}h1,.h1{font-size:36px}h2,.h2{font-size:30px}h3,.h3{font-size:24px}h4,.h4{font-size:18px}h5,.h5{font-size:14px}h6,.h6{font-size:12px}p{margin:0 0 10px}.lead{margin-bottom:20px;font-size:16px;font-weight:300;line-height:1.4}@media (min-width:768px){.lead{font-size:21px}}small,.small{font-size:85%}mark,.mark{background-color:#fcf8e3;padding:.2em}.text-left{text-align:left}.text-right{text-align:right}.text-center{text-align:center}.text-justify{text-align:justify}.text-nowrap{white-space:nowrap}.text-lowercase{text-transform:lowercase}.text-uppercase{text-transform:uppercase}.text-capitalize{text-transform:capitalize}.text-muted{color:#777}.text-primary{color:#337ab7}a.text-primary:hover,a.text-primary:focus{color:#286090}.text-success{color:#3c763d}a.text-success:hover,a.text-success:focus{color:#2b542c}.text-info{color:#31708f}a.text-info:hover,a.text-info:focus{color:#245269}.text-warning{color:#8a6d3b}a.text-warning:hover,a.text-warning:focus{color:#66512c}.text-danger{color:#a94442}a.text-danger:hover,a.text-danger:focus{color:#843534}.bg-primary{color:#fff;background-color:#337ab7}a.bg-primary:hover,a.bg-primary:focus{background-color:#286090}.bg-success{background-color:#dff0d8}a.bg-success:hover,a.bg-success:focus{background-color:#c1e2b3}.bg-info{background-color:#d9edf7}a.bg-info:hover,a.bg-info:focus{background-color:#afd9ee}.bg-warning{background-color:#fcf8e3}a.bg-warning:hover,a.bg-warning:focus{background-color:#f7ecb5}.bg-danger{background-color:#f2dede}a.bg-danger:hover,a.bg-danger:focus{background-color:#e4b9b9}.page-header{padding-bottom:9px;margin:40px 0 20px;border-bottom:1px solid #eee}ul,ol{margin-top:0;margin-bottom:10px}ul ul,ol ul,ul ol,ol ol{margin-bottom:0}.list-unstyled{padding-left:0;list-style:none}.list-inline{padding-left:0;list-style:none;margin-left:-5px}.list-inline>li{display:inline-block;padding-left:5px;padding-right:5px}dl{margin-top:0;margin-bottom:20px}dt,dd{line-height:1.42857143}dt{font-weight:bold}dd{margin-left:0}@media (min-width:768px){.dl-horizontal dt{float:left;width:160px;clear:left;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dl-horizontal dd{margin-left:180px}}abbr[title],abbr[data-original-title]{cursor:help;border-bottom:1px dotted #777}.initialism{font-size:90%;text-transform:uppercase}blockquote{padding:10px 20px;margin:0 0 20px;font-size:17.5px;border-left:5px solid #eee}blockquote p:last-child,blockquote ul:last-child,blockquote ol:last-child{margin-bottom:0}blockquote footer,blockquote small,blockquote .small{display:block;font-size:80%;line-height:1.42857143;color:#777}blockquote footer:before,blockquote small:before,blockquote .small:before{content:'\2014 \00A0'}.blockquote-reverse,blockquote.pull-right{padding-right:15px;padding-left:0;border-right:5px solid #eee;border-left:0;text-align:right}.blockquote-reverse footer:before,blockquote.pull-right footer:before,.blockquote-reverse small:before,blockquote.pull-right small:before,.blockquote-reverse .small:before,blockquote.pull-right .small:before{content:''}.blockquote-reverse footer:after,blockquote.pull-right footer:after,.blockquote-reverse small:after,blockquote.pull-right small:after,.blockquote-reverse .small:after,blockquote.pull-right .small:after{content:'\00A0 \2014'}address{margin-bottom:20px;font-style:normal;line-height:1.42857143}code,kbd,pre,samp{font-family:Menlo,Monaco,Consolas,"Courier New",monospace}code{padding:2px 4px;font-size:90%;color:#c7254e;background-color:#f9f2f4;border-radius:4px}kbd{padding:2px 4px;font-size:90%;color:#fff;background-color:#333;border-radius:3px;-webkit-box-shadow:inset 0 -1px 0 rgba(0,0,0,0.25);box-shadow:inset 0 -1px 0 rgba(0,0,0,0.25)}kbd kbd{padding:0;font-size:100%;font-weight:bold;-webkit-box-shadow:none;box-shadow:none}pre{display:block;padding:9.5px;margin:0 0 10px;font-size:13px;line-height:1.42857143;word-break:break-all;word-wrap:break-word;color:#333;background-color:#f5f5f5;border:1px solid #ccc;border-radius:4px}pre code{padding:0;font-size:inherit;color:inherit;white-space:pre-wrap;background-color:transparent;border-radius:0}.pre-scrollable{max-height:340px;overflow-y:scroll}.container{margin-right:auto;margin-left:auto;padding-left:15px;padding-right:15px}@media (min-width:768px){.container{width:750px}}@media (min-width:992px){.container{width:970px}}@media (min-width:1200px){.container{width:1170px}}.container-fluid{margin-right:auto;margin-left:auto;padding-left:15px;padding-right:15px}.row{margin-left:-15px;margin-right:-15px}.col-xs-1, .col-sm-1, .col-md-1, .col-lg-1, .col-xs-2, .col-sm-2, .col-md-2, .col-lg-2, .col-xs-3, .col-sm-3, .col-md-3, .col-lg-3, .col-xs-4, .col-sm-4, .col-md-4, .col-lg-4, .col-xs-5, .col-sm-5, .col-md-5, .col-lg-5, .col-xs-6, .col-sm-6, .col-md-6, .col-lg-6, .col-xs-7, .col-sm-7, .col-md-7, .col-lg-7, .col-xs-8, .col-sm-8, .col-md-8, .col-lg-8, .col-xs-9, .col-sm-9, .col-md-9, .col-lg-9, .col-xs-10, .col-sm-10, .col-md-10, .col-lg-10, .col-xs-11, .col-sm-11, .col-md-11, .col-lg-11, .col-xs-12, .col-sm-12, .col-md-12, .col-lg-12{position:relative;min-height:1px;padding-left:15px;padding-right:15px}.col-xs-1, .col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6, .col-xs-7, .col-xs-8, .col-xs-9, .col-xs-10, .col-xs-11, .col-xs-12{float:left}.col-xs-12{width:100%}.col-xs-11{width:91.66666667%}.col-xs-10{width:83.33333333%}.col-xs-9{width:75%}.col-xs-8{width:66.66666667%}.col-xs-7{width:58.33333333%}.col-xs-6{width:50%}.col-xs-5{width:41.66666667%}.col-xs-4{width:33.33333333%}.col-xs-3{width:25%}.col-xs-2{width:16.66666667%}.col-xs-1{width:8.33333333%}.col-xs-pull-12{right:100%}.col-xs-pull-11{right:91.66666667%}.col-xs-pull-10{right:83.33333333%}.col-xs-pull-9{right:75%}.col-xs-pull-8{right:66.66666667%}.col-xs-pull-7{right:58.33333333%}.col-xs-pull-6{right:50%}.col-xs-pull-5{right:41.66666667%}.col-xs-pull-4{right:33.33333333%}.col-xs-pull-3{right:25%}.col-xs-pull-2{right:16.66666667%}.col-xs-pull-1{right:8.33333333%}.col-xs-pull-0{right:auto}.col-xs-push-12{left:100%}.col-xs-push-11{left:91.66666667%}.col-xs-push-10{left:83.33333333%}.col-xs-push-9{left:75%}.col-xs-push-8{left:66.66666667%}.col-xs-push-7{left:58.33333333%}.col-xs-push-6{left:50%}.col-xs-push-5{left:41.66666667%}.col-xs-push-4{left:33.33333333%}.col-xs-push-3{left:25%}.col-xs-push-2{left:16.66666667%}.col-xs-push-1{left:8.33333333%}.col-xs-push-0{left:auto}.col-xs-offset-12{margin-left:100%}.col-xs-offset-11{margin-left:91.66666667%}.col-xs-offset-10{margin-left:83.33333333%}.col-xs-offset-9{margin-left:75%}.col-xs-offset-8{margin-left:66.66666667%}.col-xs-offset-7{margin-left:58.33333333%}.col-xs-offset-6{margin-left:50%}.col-xs-offset-5{margin-left:41.66666667%}.col-xs-offset-4{margin-left:33.33333333%}.col-xs-offset-3{margin-left:25%}.col-xs-offset-2{margin-left:16.66666667%}.col-xs-offset-1{margin-left:8.33333333%}.col-xs-offset-0{margin-left:0}@media (min-width:768px){.col-sm-1, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-10, .col-sm-11, .col-sm-12{float:left}.col-sm-12{width:100%}.col-sm-11{width:91.66666667%}.col-sm-10{width:83.33333333%}.col-sm-9{width:75%}.col-sm-8{width:66.66666667%}.col-sm-7{width:58.33333333%}.col-sm-6{width:50%}.col-sm-5{width:41.66666667%}.col-sm-4{width:33.33333333%}.col-sm-3{width:25%}.col-sm-2{width:16.66666667%}.col-sm-1{width:8.33333333%}.col-sm-pull-12{right:100%}.col-sm-pull-11{right:91.66666667%}.col-sm-pull-10{right:83.33333333%}.col-sm-pull-9{right:75%}.col-sm-pull-8{right:66.66666667%}.col-sm-pull-7{right:58.33333333%}.col-sm-pull-6{right:50%}.col-sm-pull-5{right:41.66666667%}.col-sm-pull-4{right:33.33333333%}.col-sm-pull-3{right:25%}.col-sm-pull-2{right:16.66666667%}.col-sm-pull-1{right:8.33333333%}.col-sm-pull-0{right:auto}.col-sm-push-12{left:100%}.col-sm-push-11{left:91.66666667%}.col-sm-push-10{left:83.33333333%}.col-sm-push-9{left:75%}.col-sm-push-8{left:66.66666667%}.col-sm-push-7{left:58.33333333%}.col-sm-push-6{left:50%}.col-sm-push-5{left:41.66666667%}.col-sm-push-4{left:33.33333333%}.col-sm-push-3{left:25%}.col-sm-push-2{left:16.66666667%}.col-sm-push-1{left:8.33333333%}.col-sm-push-0{left:auto}.col-sm-offset-12{margin-left:100%}.col-sm-offset-11{margin-left:91.66666667%}.col-sm-offset-10{margin-left:83.33333333%}.col-sm-offset-9{margin-left:75%}.col-sm-offset-8{margin-left:66.66666667%}.col-sm-offset-7{margin-left:58.33333333%}.col-sm-offset-6{margin-left:50%}.col-sm-offset-5{margin-left:41.66666667%}.col-sm-offset-4{margin-left:33.33333333%}.col-sm-offset-3{margin-left:25%}.col-sm-offset-2{margin-left:16.66666667%}.col-sm-offset-1{margin-left:8.33333333%}.col-sm-offset-0{margin-left:0}}@media (min-width:992px){.col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-md-10, .col-md-11, .col-md-12{float:left}.col-md-12{width:100%}.col-md-11{width:91.66666667%}.col-md-10{width:83.33333333%}.col-md-9{width:75%}.col-md-8{width:66.66666667%}.col-md-7{width:58.33333333%}.col-md-6{width:50%}.col-md-5{width:41.66666667%}.col-md-4{width:33.33333333%}.col-md-3{width:25%}.col-md-2{width:16.66666667%}.col-md-1{width:8.33333333%}.col-md-pull-12{right:100%}.col-md-pull-11{right:91.66666667%}.col-md-pull-10{right:83.33333333%}.col-md-pull-9{right:75%}.col-md-pull-8{right:66.66666667%}.col-md-pull-7{right:58.33333333%}.col-md-pull-6{right:50%}.col-md-pull-5{right:41.66666667%}.col-md-pull-4{right:33.33333333%}.col-md-pull-3{right:25%}.col-md-pull-2{right:16.66666667%}.col-md-pull-1{right:8.33333333%}.col-md-pull-0{right:auto}.col-md-push-12{left:100%}.col-md-push-11{left:91.66666667%}.col-md-push-10{left:83.33333333%}.col-md-push-9{left:75%}.col-md-push-8{left:66.66666667%}.col-md-push-7{left:58.33333333%}.col-md-push-6{left:50%}.col-md-push-5{left:41.66666667%}.col-md-push-4{left:33.33333333%}.col-md-push-3{left:25%}.col-md-push-2{left:16.66666667%}.col-md-push-1{left:8.33333333%}.col-md-push-0{left:auto}.col-md-offset-12{margin-left:100%}.col-md-offset-11{margin-left:91.66666667%}.col-md-offset-10{margin-left:83.33333333%}.col-md-offset-9{margin-left:75%}.col-md-offset-8{margin-left:66.66666667%}.col-md-offset-7{margin-left:58.33333333%}.col-md-offset-6{margin-left:50%}.col-md-offset-5{margin-left:41.66666667%}.col-md-offset-4{margin-left:33.33333333%}.col-md-offset-3{margin-left:25%}.col-md-offset-2{margin-left:16.66666667%}.col-md-offset-1{margin-left:8.33333333%}.col-md-offset-0{margin-left:0}}@media (min-width:1200px){.col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12{float:left}.col-lg-12{width:100%}.col-lg-11{width:91.66666667%}.col-lg-10{width:83.33333333%}.col-lg-9{width:75%}.col-lg-8{width:66.66666667%}.col-lg-7{width:58.33333333%}.col-lg-6{width:50%}.col-lg-5{width:41.66666667%}.col-lg-4{width:33.33333333%}.col-lg-3{width:25%}.col-lg-2{width:16.66666667%}.col-lg-1{width:8.33333333%}.col-lg-pull-12{right:100%}.col-lg-pull-11{right:91.66666667%}.col-lg-pull-10{right:83.33333333%}.col-lg-pull-9{right:75%}.col-lg-pull-8{right:66.66666667%}.col-lg-pull-7{right:58.33333333%}.col-lg-pull-6{right:50%}.col-lg-pull-5{right:41.66666667%}.col-lg-pull-4{right:33.33333333%}.col-lg-pull-3{right:25%}.col-lg-pull-2{right:16.66666667%}.col-lg-pull-1{right:8.33333333%}.col-lg-pull-0{right:auto}.col-lg-push-12{left:100%}.col-lg-push-11{left:91.66666667%}.col-lg-push-10{left:83.33333333%}.col-lg-push-9{left:75%}.col-lg-push-8{left:66.66666667%}.col-lg-push-7{left:58.33333333%}.col-lg-push-6{left:50%}.col-lg-push-5{left:41.66666667%}.col-lg-push-4{left:33.33333333%}.col-lg-push-3{left:25%}.col-lg-push-2{left:16.66666667%}.col-lg-push-1{left:8.33333333%}.col-lg-push-0{left:auto}.col-lg-offset-12{margin-left:100%}.col-lg-offset-11{margin-left:91.66666667%}.col-lg-offset-10{margin-left:83.33333333%}.col-lg-offset-9{margin-left:75%}.col-lg-offset-8{margin-left:66.66666667%}.col-lg-offset-7{margin-left:58.33333333%}.col-lg-offset-6{margin-left:50%}.col-lg-offset-5{margin-left:41.66666667%}.col-lg-offset-4{margin-left:33.33333333%}.col-lg-offset-3{margin-left:25%}.col-lg-offset-2{margin-left:16.66666667%}.col-lg-offset-1{margin-left:8.33333333%}.col-lg-offset-0{margin-left:0}}table{background-color:transparent}caption{padding-top:8px;padding-bottom:8px;color:#777;text-align:left}th{text-align:left}.table{width:100%;max-width:100%;margin-bottom:20px}.table>thead>tr>th,.table>tbody>tr>th,.table>tfoot>tr>th,.table>thead>tr>td,.table>tbody>tr>td,.table>tfoot>tr>td{padding:8px;line-height:1.42857143;vertical-align:top;border-top:1px solid #ddd}.table>thead>tr>th{vertical-align:bottom;border-bottom:2px solid #ddd}.table>caption+thead>tr:first-child>th,.table>colgroup+thead>tr:first-child>th,.table>thead:first-child>tr:first-child>th,.table>caption+thead>tr:first-child>td,.table>colgroup+thead>tr:first-child>td,.table>thead:first-child>tr:first-child>td{border-top:0}.table>tbody+tbody{border-top:2px solid #ddd}.table .table{background-color:#fff}.table-condensed>thead>tr>th,.table-condensed>tbody>tr>th,.table-condensed>tfoot>tr>th,.table-condensed>thead>tr>td,.table-condensed>tbody>tr>td,.table-condensed>tfoot>tr>td{padding:5px}.table-bordered{border:1px solid #ddd}.table-bordered>thead>tr>th,.table-bordered>tbody>tr>th,.table-bordered>tfoot>tr>th,.table-bordered>thead>tr>td,.table-bordered>tbody>tr>td,.table-bordered>tfoot>tr>td{border:1px solid #ddd}.table-bordered>thead>tr>th,.table-bordered>thead>tr>td{border-bottom-width:2px}.table-striped>tbody>tr:nth-of-type(odd){background-color:#f9f9f9}.table-hover>tbody>tr:hover{background-color:#f5f5f5}table col[class*="col-"]{position:static;float:none;display:table-column}table td[class*="col-"],table th[class*="col-"]{position:static;float:none;display:table-cell}.table>thead>tr>td.active,.table>tbody>tr>td.active,.table>tfoot>tr>td.active,.table>thead>tr>th.active,.table>tbody>tr>th.active,.table>tfoot>tr>th.active,.table>thead>tr.active>td,.table>tbody>tr.active>td,.table>tfoot>tr.active>td,.table>thead>tr.active>th,.table>tbody>tr.active>th,.table>tfoot>tr.active>th{background-color:#f5f5f5}.table-hover>tbody>tr>td.active:hover,.table-hover>tbody>tr>th.active:hover,.table-hover>tbody>tr.active:hover>td,.table-hover>tbody>tr:hover>.active,.table-hover>tbody>tr.active:hover>th{background-color:#e8e8e8}.table>thead>tr>td.success,.table>tbody>tr>td.success,.table>tfoot>tr>td.success,.table>thead>tr>th.success,.table>tbody>tr>th.success,.table>tfoot>tr>th.success,.table>thead>tr.success>td,.table>tbody>tr.success>td,.table>tfoot>tr.success>td,.table>thead>tr.success>th,.table>tbody>tr.success>th,.table>tfoot>tr.success>th{background-color:#dff0d8}.table-hover>tbody>tr>td.success:hover,.table-hover>tbody>tr>th.success:hover,.table-hover>tbody>tr.success:hover>td,.table-hover>tbody>tr:hover>.success,.table-hover>tbody>tr.success:hover>th{background-color:#d0e9c6}.table>thead>tr>td.info,.table>tbody>tr>td.info,.table>tfoot>tr>td.info,.table>thead>tr>th.info,.table>tbody>tr>th.info,.table>tfoot>tr>th.info,.table>thead>tr.info>td,.table>tbody>tr.info>td,.table>tfoot>tr.info>td,.table>thead>tr.info>th,.table>tbody>tr.info>th,.table>tfoot>tr.info>th{background-color:#d9edf7}.table-hover>tbody>tr>td.info:hover,.table-hover>tbody>tr>th.info:hover,.table-hover>tbody>tr.info:hover>td,.table-hover>tbody>tr:hover>.info,.table-hover>tbody>tr.info:hover>th{background-color:#c4e3f3}.table>thead>tr>td.warning,.table>tbody>tr>td.warning,.table>tfoot>tr>td.warning,.table>thead>tr>th.warning,.table>tbody>tr>th.warning,.table>tfoot>tr>th.warning,.table>thead>tr.warning>td,.table>tbody>tr.warning>td,.table>tfoot>tr.warning>td,.table>thead>tr.warning>th,.table>tbody>tr.warning>th,.table>tfoot>tr.warning>th{background-color:#fcf8e3}.table-hover>tbody>tr>td.warning:hover,.table-hover>tbody>tr>th.warning:hover,.table-hover>tbody>tr.warning:hover>td,.table-hover>tbody>tr:hover>.warning,.table-hover>tbody>tr.warning:hover>th{background-color:#faf2cc}.table>thead>tr>td.danger,.table>tbody>tr>td.danger,.table>tfoot>tr>td.danger,.table>thead>tr>th.danger,.table>tbody>tr>th.danger,.table>tfoot>tr>th.danger,.table>thead>tr.danger>td,.table>tbody>tr.danger>td,.table>tfoot>tr.danger>td,.table>thead>tr.danger>th,.table>tbody>tr.danger>th,.table>tfoot>tr.danger>th{background-color:#f2dede}.table-hover>tbody>tr>td.danger:hover,.table-hover>tbody>tr>th.danger:hover,.table-hover>tbody>tr.danger:hover>td,.table-hover>tbody>tr:hover>.danger,.table-hover>tbody>tr.danger:hover>th{background-color:#ebcccc}.table-responsive{overflow-x:auto;min-height:0.01%}@media screen and (max-width:767px){.table-responsive{width:100%;margin-bottom:15px;overflow-y:hidden;-ms-overflow-style:-ms-autohiding-scrollbar;border:1px solid #ddd}.table-responsive>.table{margin-bottom:0}.table-responsive>.table>thead>tr>th,.table-responsive>.table>tbody>tr>th,.table-responsive>.table>tfoot>tr>th,.table-responsive>.table>thead>tr>td,.table-responsive>.table>tbody>tr>td,.table-responsive>.table>tfoot>tr>td{white-space:nowrap}.table-responsive>.table-bordered{border:0}.table-responsive>.table-bordered>thead>tr>th:first-child,.table-responsive>.table-bordered>tbody>tr>th:first-child,.table-responsive>.table-bordered>tfoot>tr>th:first-child,.table-responsive>.table-bordered>thead>tr>td:first-child,.table-responsive>.table-bordered>tbody>tr>td:first-child,.table-responsive>.table-bordered>tfoot>tr>td:first-child{border-left:0}.table-responsive>.table-bordered>thead>tr>th:last-child,.table-responsive>.table-bordered>tbody>tr>th:last-child,.table-responsive>.table-bordered>tfoot>tr>th:last-child,.table-responsive>.table-bordered>thead>tr>td:last-child,.table-responsive>.table-bordered>tbody>tr>td:last-child,.table-responsive>.table-bordered>tfoot>tr>td:last-child{border-right:0}.table-responsive>.table-bordered>tbody>tr:last-child>th,.table-responsive>.table-bordered>tfoot>tr:last-child>th,.table-responsive>.table-bordered>tbody>tr:last-child>td,.table-responsive>.table-bordered>tfoot>tr:last-child>td{border-bottom:0}}fieldset{padding:0;margin:0;border:0;min-width:0}legend{display:block;width:100%;padding:0;margin-bottom:20px;font-size:21px;line-height:inherit;color:#333;border:0;border-bottom:1px solid #e5e5e5}label{display:inline-block;max-width:100%;margin-bottom:5px;font-weight:bold}input[type="search"]{-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box}input[type="radio"],input[type="checkbox"]{margin:4px 0 0;margin-top:1px \9;line-height:normal}input[type="file"]{display:block}input[type="range"]{display:block;width:100%}select[multiple],select[size]{height:auto}input[type="file"]:focus,input[type="radio"]:focus,input[type="checkbox"]:focus{outline:5px auto -webkit-focus-ring-color;outline-offset:-2px}output{display:block;padding-top:7px;font-size:14px;line-height:1.42857143;color:#555}.form-control{display:block;width:100%;height:34px;padding:6px 12px;font-size:14px;line-height:1.42857143;color:#555;background-color:#fff;background-image:none;border:1px solid #ccc;border-radius:4px;-webkit-box-shadow:inset 0 1px 1px rgba(0,0,0,0.075);box-shadow:inset 0 1px 1px rgba(0,0,0,0.075);-webkit-transition:border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;-o-transition:border-color ease-in-out .15s, box-shadow ease-in-out .15s;transition:border-color ease-in-out .15s, box-shadow ease-in-out .15s}.form-control:focus{border-color:#66afe9;outline:0;-webkit-box-shadow:inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);box-shadow:inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6)}.form-control::-moz-placeholder{color:#999;opacity:1}.form-control:-ms-input-placeholder{color:#999}.form-control::-webkit-input-placeholder{color:#999}.form-control::-ms-expand{border:0;background-color:transparent}.form-control[disabled],.form-control[readonly],fieldset[disabled] .form-control{background-color:#eee;opacity:1}.form-control[disabled],fieldset[disabled] .form-control{cursor:not-allowed}textarea.form-control{height:auto}input[type="search"]{-webkit-appearance:none}@media screen and (-webkit-min-device-pixel-ratio:0){input[type="date"].form-control,input[type="time"].form-control,input[type="datetime-local"].form-control,input[type="month"].form-control{line-height:34px}input[type="date"].input-sm,input[type="time"].input-sm,input[type="datetime-local"].input-sm,input[type="month"].input-sm,.input-group-sm input[type="date"],.input-group-sm input[type="time"],.input-group-sm input[type="datetime-local"],.input-group-sm input[type="month"]{line-height:30px}input[type="date"].input-lg,input[type="time"].input-lg,input[type="datetime-local"].input-lg,input[type="month"].input-lg,.input-group-lg input[type="date"],.input-group-lg input[type="time"],.input-group-lg input[type="datetime-local"],.input-group-lg input[type="month"]{line-height:46px}}.form-group{margin-bottom:15px}.radio,.checkbox{position:relative;display:block;margin-top:10px;margin-bottom:10px}.radio label,.checkbox label{min-height:20px;padding-left:20px;margin-bottom:0;font-weight:normal;cursor:pointer}.radio input[type="radio"],.radio-inline input[type="radio"],.checkbox input[type="checkbox"],.checkbox-inline input[type="checkbox"]{position:absolute;margin-left:-20px;margin-top:4px \9}.radio+.radio,.checkbox+.checkbox{margin-top:-5px}.radio-inline,.checkbox-inline{position:relative;display:inline-block;padding-left:20px;margin-bottom:0;vertical-align:middle;font-weight:normal;cursor:pointer}.radio-inline+.radio-inline,.checkbox-inline+.checkbox-inline{margin-top:0;margin-left:10px}input[type="radio"][disabled],input[type="checkbox"][disabled],input[type="radio"].disabled,input[type="checkbox"].disabled,fieldset[disabled] input[type="radio"],fieldset[disabled] input[type="checkbox"]{cursor:not-allowed}.radio-inline.disabled,.checkbox-inline.disabled,fieldset[disabled] .radio-inline,fieldset[disabled] .checkbox-inline{cursor:not-allowed}.radio.disabled label,.checkbox.disabled label,fieldset[disabled] .radio label,fieldset[disabled] .checkbox label{cursor:not-allowed}.form-control-static{padding-top:7px;padding-bottom:7px;margin-bottom:0;min-height:34px}.form-control-static.input-lg,.form-control-static.input-sm{padding-left:0;padding-right:0}.input-sm{height:30px;padding:5px 10px;font-size:12px;line-height:1.5;border-radius:3px}select.input-sm{height:30px;line-height:30px}textarea.input-sm,select[multiple].input-sm{height:auto}.form-group-sm .form-control{height:30px;padding:5px 10px;font-size:12px;line-height:1.5;border-radius:3px}.form-group-sm select.form-control{height:30px;line-height:30px}.form-group-sm textarea.form-control,.form-group-sm select[multiple].form-control{height:auto}.form-group-sm .form-control-static{height:30px;min-height:32px;padding:6px 10px;font-size:12px;line-height:1.5}.input-lg{height:46px;padding:10px 16px;font-size:18px;line-height:1.3333333;border-radius:6px}select.input-lg{height:46px;line-height:46px}textarea.input-lg,select[multiple].input-lg{height:auto}.form-group-lg .form-control{height:46px;padding:10px 16px;font-size:18px;line-height:1.3333333;border-radius:6px}.form-group-lg select.form-control{height:46px;line-height:46px}.form-group-lg textarea.form-control,.form-group-lg select[multiple].form-control{height:auto}.form-group-lg .form-control-static{height:46px;min-height:38px;padding:11px 16px;font-size:18px;line-height:1.3333333}.has-feedback{position:relative}.has-feedback .form-control{padding-right:42.5px}.form-control-feedback{position:absolute;top:0;right:0;z-index:2;display:block;width:34px;height:34px;line-height:34px;text-align:center;pointer-events:none}.input-lg+.form-control-feedback,.input-group-lg+.form-control-feedback,.form-group-lg .form-control+.form-control-feedback{width:46px;height:46px;line-height:46px}.input-sm+.form-control-feedback,.input-group-sm+.form-control-feedback,.form-group-sm .form-control+.form-control-feedback{width:30px;height:30px;line-height:30px}.has-success .help-block,.has-success .control-label,.has-success .radio,.has-success .checkbox,.has-success .radio-inline,.has-success .checkbox-inline,.has-success.radio label,.has-success.checkbox label,.has-success.radio-inline label,.has-success.checkbox-inline label{color:#3c763d}.has-success .form-control{border-color:#3c763d;-webkit-box-shadow:inset 0 1px 1px rgba(0,0,0,0.075);box-shadow:inset 0 1px 1px rgba(0,0,0,0.075)}.has-success .form-control:focus{border-color:#2b542c;-webkit-box-shadow:inset 0 1px 1px rgba(0,0,0,0.075),0 0 6px #67b168;box-shadow:inset 0 1px 1px rgba(0,0,0,0.075),0 0 6px #67b168}.has-success .input-group-addon{color:#3c763d;border-color:#3c763d;background-color:#dff0d8}.has-success .form-control-feedback{color:#3c763d}.has-warning .help-block,.has-warning .control-label,.has-warning .radio,.has-warning .checkbox,.has-warning .radio-inline,.has-warning .checkbox-inline,.has-warning.radio label,.has-warning.checkbox label,.has-warning.radio-inline label,.has-warning.checkbox-inline label{color:#8a6d3b}.has-warning .form-control{border-color:#8a6d3b;-webkit-box-shadow:inset 0 1px 1px rgba(0,0,0,0.075);box-shadow:inset 0 1px 1px rgba(0,0,0,0.075)}.has-warning .form-control:focus{border-color:#66512c;-webkit-box-shadow:inset 0 1px 1px rgba(0,0,0,0.075),0 0 6px #c0a16b;box-shadow:inset 0 1px 1px rgba(0,0,0,0.075),0 0 6px #c0a16b}.has-warning .input-group-addon{color:#8a6d3b;border-color:#8a6d3b;background-color:#fcf8e3}.has-warning .form-control-feedback{color:#8a6d3b}.has-error .help-block,.has-error .control-label,.has-error .radio,.has-error .checkbox,.has-error .radio-inline,.has-error .checkbox-inline,.has-error.radio label,.has-error.checkbox label,.has-error.radio-inline label,.has-error.checkbox-inline label{color:#a94442}.has-error .form-control{border-color:#a94442;-webkit-box-shadow:inset 0 1px 1px rgba(0,0,0,0.075);box-shadow:inset 0 1px 1px rgba(0,0,0,0.075)}.has-error .form-control:focus{border-color:#843534;-webkit-box-shadow:inset 0 1px 1px rgba(0,0,0,0.075),0 0 6px #ce8483;box-shadow:inset 0 1px 1px rgba(0,0,0,0.075),0 0 6px #ce8483}.has-error .input-group-addon{color:#a94442;border-color:#a94442;background-color:#f2dede}.has-error .form-control-feedback{color:#a94442}.has-feedback label~.form-control-feedback{top:25px}.has-feedback label.sr-only~.form-control-feedback{top:0}.help-block{display:block;margin-top:5px;margin-bottom:10px;color:#737373}@media (min-width:768px){.form-inline .form-group{display:inline-block;margin-bottom:0;vertical-align:middle}.form-inline .form-control{display:inline-block;width:auto;vertical-align:middle}.form-inline .form-control-static{display:inline-block}.form-inline .input-group{display:inline-table;vertical-align:middle}.form-inline .input-group .input-group-addon,.form-inline .input-group .input-group-btn,.form-inline .input-group .form-control{width:auto}.form-inline .input-group>.form-control{width:100%}.form-inline .control-label{margin-bottom:0;vertical-align:middle}.form-inline .radio,.form-inline .checkbox{display:inline-block;margin-top:0;margin-bottom:0;vertical-align:middle}.form-inline .radio label,.form-inline .checkbox label{padding-left:0}.form-inline .radio input[type="radio"],.form-inline .checkbox input[type="checkbox"]{position:relative;margin-left:0}.form-inline .has-feedback .form-control-feedback{top:0}}.form-horizontal .radio,.form-horizontal .checkbox,.form-horizontal .radio-inline,.form-horizontal .checkbox-inline{margin-top:0;margin-bottom:0;padding-top:7px}.form-horizontal .radio,.form-horizontal .checkbox{min-height:27px}.form-horizontal .form-group{margin-left:-15px;margin-right:-15px}@media (min-width:768px){.form-horizontal .control-label{text-align:right;margin-bottom:0;padding-top:7px}}.form-horizontal .has-feedback .form-control-feedback{right:15px}@media (min-width:768px){.form-horizontal .form-group-lg .control-label{padding-top:11px;font-size:18px}}@media (min-width:768px){.form-horizontal .form-group-sm .control-label{padding-top:6px;font-size:12px}}.btn{display:inline-block;margin-bottom:0;font-weight:normal;text-align:center;vertical-align:middle;-ms-touch-action:manipulation;touch-action:manipulation;cursor:pointer;background-image:none;border:1px solid transparent;white-space:nowrap;padding:6px 12px;font-size:14px;line-height:1.42857143;border-radius:4px;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.btn:focus,.btn:active:focus,.btn.active:focus,.btn.focus,.btn:active.focus,.btn.active.focus{outline:5px auto -webkit-focus-ring-color;outline-offset:-2px}.btn:hover,.btn:focus,.btn.focus{color:#333;text-decoration:none}.btn:active,.btn.active{outline:0;background-image:none;-webkit-box-shadow:inset 0 3px 5px rgba(0,0,0,0.125);box-shadow:inset 0 3px 5px rgba(0,0,0,0.125)}.btn.disabled,.btn[disabled],fieldset[disabled] .btn{cursor:not-allowed;opacity:.65;filter:alpha(opacity=65);-webkit-box-shadow:none;box-shadow:none}a.btn.disabled,fieldset[disabled] a.btn{pointer-events:none}.btn-default{color:#333;background-color:#fff;border-color:#ccc}.btn-default:focus,.btn-default.focus{color:#333;background-color:#e6e6e6;border-color:#8c8c8c}.btn-default:hover{color:#333;background-color:#e6e6e6;border-color:#adadad}.btn-default:active,.btn-default.active,.open>.dropdown-toggle.btn-default{color:#333;background-color:#e6e6e6;border-color:#adadad}.btn-default:active:hover,.btn-default.active:hover,.open>.dropdown-toggle.btn-default:hover,.btn-default:active:focus,.btn-default.active:focus,.open>.dropdown-toggle.btn-default:focus,.btn-default:active.focus,.btn-default.active.focus,.open>.dropdown-toggle.btn-default.focus{color:#333;background-color:#d4d4d4;border-color:#8c8c8c}.btn-default:active,.btn-default.active,.open>.dropdown-toggle.btn-default{background-image:none}.btn-default.disabled:hover,.btn-default[disabled]:hover,fieldset[disabled] .btn-default:hover,.btn-default.disabled:focus,.btn-default[disabled]:focus,fieldset[disabled] .btn-default:focus,.btn-default.disabled.focus,.btn-default[disabled].focus,fieldset[disabled] .btn-default.focus{background-color:#fff;border-color:#ccc}.btn-default .badge{color:#fff;background-color:#333}.btn-primary{color:#fff;background-color:#337ab7;border-color:#2e6da4}.btn-primary:focus,.btn-primary.focus{color:#fff;background-color:#286090;border-color:#122b40}.btn-primary:hover{color:#fff;background-color:#286090;border-color:#204d74}.btn-primary:active,.btn-primary.active,.open>.dropdown-toggle.btn-primary{color:#fff;background-color:#286090;border-color:#204d74}.btn-primary:active:hover,.btn-primary.active:hover,.open>.dropdown-toggle.btn-primary:hover,.btn-primary:active:focus,.btn-primary.active:focus,.open>.dropdown-toggle.btn-primary:focus,.btn-primary:active.focus,.btn-primary.active.focus,.open>.dropdown-toggle.btn-primary.focus{color:#fff;background-color:#204d74;border-color:#122b40}.btn-primary:active,.btn-primary.active,.open>.dropdown-toggle.btn-primary{background-image:none}.btn-primary.disabled:hover,.btn-primary[disabled]:hover,fieldset[disabled] .btn-primary:hover,.btn-primary.disabled:focus,.btn-primary[disabled]:focus,fieldset[disabled] .btn-primary:focus,.btn-primary.disabled.focus,.btn-primary[disabled].focus,fieldset[disabled] .btn-primary.focus{background-color:#337ab7;border-color:#2e6da4}.btn-primary .badge{color:#337ab7;background-color:#fff}.btn-success{color:#fff;background-color:#5cb85c;border-color:#4cae4c}.btn-success:focus,.btn-success.focus{color:#fff;background-color:#449d44;border-color:#255625}.btn-success:hover{color:#fff;background-color:#449d44;border-color:#398439}.btn-success:active,.btn-success.active,.open>.dropdown-toggle.btn-success{color:#fff;background-color:#449d44;border-color:#398439}.btn-success:active:hover,.btn-success.active:hover,.open>.dropdown-toggle.btn-success:hover,.btn-success:active:focus,.btn-success.active:focus,.open>.dropdown-toggle.btn-success:focus,.btn-success:active.focus,.btn-success.active.focus,.open>.dropdown-toggle.btn-success.focus{color:#fff;background-color:#398439;border-color:#255625}.btn-success:active,.btn-success.active,.open>.dropdown-toggle.btn-success{background-image:none}.btn-success.disabled:hover,.btn-success[disabled]:hover,fieldset[disabled] .btn-success:hover,.btn-success.disabled:focus,.btn-success[disabled]:focus,fieldset[disabled] .btn-success:focus,.btn-success.disabled.focus,.btn-success[disabled].focus,fieldset[disabled] .btn-success.focus{background-color:#5cb85c;border-color:#4cae4c}.btn-success .badge{color:#5cb85c;background-color:#fff}.btn-info{color:#fff;background-color:#5bc0de;border-color:#46b8da}.btn-info:focus,.btn-info.focus{color:#fff;background-color:#31b0d5;border-color:#1b6d85}.btn-info:hover{color:#fff;background-color:#31b0d5;border-color:#269abc}.btn-info:active,.btn-info.active,.open>.dropdown-toggle.btn-info{color:#fff;background-color:#31b0d5;border-color:#269abc}.btn-info:active:hover,.btn-info.active:hover,.open>.dropdown-toggle.btn-info:hover,.btn-info:active:focus,.btn-info.active:focus,.open>.dropdown-toggle.btn-info:focus,.btn-info:active.focus,.btn-info.active.focus,.open>.dropdown-toggle.btn-info.focus{color:#fff;background-color:#269abc;border-color:#1b6d85}.btn-info:active,.btn-info.active,.open>.dropdown-toggle.btn-info{background-image:none}.btn-info.disabled:hover,.btn-info[disabled]:hover,fieldset[disabled] .btn-info:hover,.btn-info.disabled:focus,.btn-info[disabled]:focus,fieldset[disabled] .btn-info:focus,.btn-info.disabled.focus,.btn-info[disabled].focus,fieldset[disabled] .btn-info.focus{background-color:#5bc0de;border-color:#46b8da}.btn-info .badge{color:#5bc0de;background-color:#fff}.btn-warning{color:#fff;background-color:#f0ad4e;border-color:#eea236}.btn-warning:focus,.btn-warning.focus{color:#fff;background-color:#ec971f;border-color:#985f0d}.btn-warning:hover{color:#fff;background-color:#ec971f;border-color:#d58512}.btn-warning:active,.btn-warning.active,.open>.dropdown-toggle.btn-warning{color:#fff;background-color:#ec971f;border-color:#d58512}.btn-warning:active:hover,.btn-warning.active:hover,.open>.dropdown-toggle.btn-warning:hover,.btn-warning:active:focus,.btn-warning.active:focus,.open>.dropdown-toggle.btn-warning:focus,.btn-warning:active.focus,.btn-warning.active.focus,.open>.dropdown-toggle.btn-warning.focus{color:#fff;background-color:#d58512;border-color:#985f0d}.btn-warning:active,.btn-warning.active,.open>.dropdown-toggle.btn-warning{background-image:none}.btn-warning.disabled:hover,.btn-warning[disabled]:hover,fieldset[disabled] .btn-warning:hover,.btn-warning.disabled:focus,.btn-warning[disabled]:focus,fieldset[disabled] .btn-warning:focus,.btn-warning.disabled.focus,.btn-warning[disabled].focus,fieldset[disabled] .btn-warning.focus{background-color:#f0ad4e;border-color:#eea236}.btn-warning .badge{color:#f0ad4e;background-color:#fff}.btn-danger{color:#fff;background-color:#d9534f;border-color:#d43f3a}.btn-danger:focus,.btn-danger.focus{color:#fff;background-color:#c9302c;border-color:#761c19}.btn-danger:hover{color:#fff;background-color:#c9302c;border-color:#ac2925}.btn-danger:active,.btn-danger.active,.open>.dropdown-toggle.btn-danger{color:#fff;background-color:#c9302c;border-color:#ac2925}.btn-danger:active:hover,.btn-danger.active:hover,.open>.dropdown-toggle.btn-danger:hover,.btn-danger:active:focus,.btn-danger.active:focus,.open>.dropdown-toggle.btn-danger:focus,.btn-danger:active.focus,.btn-danger.active.focus,.open>.dropdown-toggle.btn-danger.focus{color:#fff;background-color:#ac2925;border-color:#761c19}.btn-danger:active,.btn-danger.active,.open>.dropdown-toggle.btn-danger{background-image:none}.btn-danger.disabled:hover,.btn-danger[disabled]:hover,fieldset[disabled] .btn-danger:hover,.btn-danger.disabled:focus,.btn-danger[disabled]:focus,fieldset[disabled] .btn-danger:focus,.btn-danger.disabled.focus,.btn-danger[disabled].focus,fieldset[disabled] .btn-danger.focus{background-color:#d9534f;border-color:#d43f3a}.btn-danger .badge{color:#d9534f;background-color:#fff}.btn-link{color:#337ab7;font-weight:normal;border-radius:0}.btn-link,.btn-link:active,.btn-link.active,.btn-link[disabled],fieldset[disabled] .btn-link{background-color:transparent;-webkit-box-shadow:none;box-shadow:none}.btn-link,.btn-link:hover,.btn-link:focus,.btn-link:active{border-color:transparent}.btn-link:hover,.btn-link:focus{color:#23527c;text-decoration:underline;background-color:transparent}.btn-link[disabled]:hover,fieldset[disabled] .btn-link:hover,.btn-link[disabled]:focus,fieldset[disabled] .btn-link:focus{color:#777;text-decoration:none}.btn-lg{padding:10px 16px;font-size:18px;line-height:1.3333333;border-radius:6px}.btn-sm{padding:5px 10px;font-size:12px;line-height:1.5;border-radius:3px}.btn-xs{padding:1px 5px;font-size:12px;line-height:1.5;border-radius:3px}.btn-block{display:block;width:100%}.btn-block+.btn-block{margin-top:5px}input[type="submit"].btn-block,input[type="reset"].btn-block,input[type="button"].btn-block{width:100%}.input-group{position:relative;display:table;border-collapse:separate}.input-group[class*="col-"]{float:none;padding-left:0;padding-right:0}.input-group .form-control{position:relative;z-index:2;float:left;width:100%;margin-bottom:0}.input-group .form-control:focus{z-index:3}.input-group-lg>.form-control,.input-group-lg>.input-group-addon,.input-group-lg>.input-group-btn>.btn{height:46px;padding:10px 16px;font-size:18px;line-height:1.3333333;border-radius:6px}select.input-group-lg>.form-control,select.input-group-lg>.input-group-addon,select.input-group-lg>.input-group-btn>.btn{height:46px;line-height:46px}textarea.input-group-lg>.form-control,textarea.input-group-lg>.input-group-addon,textarea.input-group-lg>.input-group-btn>.btn,select[multiple].input-group-lg>.form-control,select[multiple].input-group-lg>.input-group-addon,select[multiple].input-group-lg>.input-group-btn>.btn{height:auto}.input-group-sm>.form-control,.input-group-sm>.input-group-addon,.input-group-sm>.input-group-btn>.btn{height:30px;padding:5px 10px;font-size:12px;line-height:1.5;border-radius:3px}select.input-group-sm>.form-control,select.input-group-sm>.input-group-addon,select.input-group-sm>.input-group-btn>.btn{height:30px;line-height:30px}textarea.input-group-sm>.form-control,textarea.input-group-sm>.input-group-addon,textarea.input-group-sm>.input-group-btn>.btn,select[multiple].input-group-sm>.form-control,select[multiple].input-group-sm>.input-group-addon,select[multiple].input-group-sm>.input-group-btn>.btn{height:auto}.input-group-addon,.input-group-btn,.input-group .form-control{display:table-cell}.input-group-addon:not(:first-child):not(:last-child),.input-group-btn:not(:first-child):not(:last-child),.input-group .form-control:not(:first-child):not(:last-child){border-radius:0}.input-group-addon,.input-group-btn{width:1%;white-space:nowrap;vertical-align:middle}.input-group-addon{padding:6px 12px;font-size:14px;font-weight:normal;line-height:1;color:#555;text-align:center;background-color:#eee;border:1px solid #ccc;border-radius:4px}.input-group-addon.input-sm{padding:5px 10px;font-size:12px;border-radius:3px}.input-group-addon.input-lg{padding:10px 16px;font-size:18px;border-radius:6px}.input-group-addon input[type="radio"],.input-group-addon input[type="checkbox"]{margin-top:0}.input-group .form-control:first-child,.input-group-addon:first-child,.input-group-btn:first-child>.btn,.input-group-btn:first-child>.btn-group>.btn,.input-group-btn:first-child>.dropdown-toggle,.input-group-btn:last-child>.btn:not(:last-child):not(.dropdown-toggle),.input-group-btn:last-child>.btn-group:not(:last-child)>.btn{border-bottom-right-radius:0;border-top-right-radius:0}.input-group-addon:first-child{border-right:0}.input-group .form-control:last-child,.input-group-addon:last-child,.input-group-btn:last-child>.btn,.input-group-btn:last-child>.btn-group>.btn,.input-group-btn:last-child>.dropdown-toggle,.input-group-btn:first-child>.btn:not(:first-child),.input-group-btn:first-child>.btn-group:not(:first-child)>.btn{border-bottom-left-radius:0;border-top-left-radius:0}.input-group-addon:last-child{border-left:0}.input-group-btn{position:relative;font-size:0;white-space:nowrap}.input-group-btn>.btn{position:relative}.input-group-btn>.btn+.btn{margin-left:-1px}.input-group-btn>.btn:hover,.input-group-btn>.btn:focus,.input-group-btn>.btn:active{z-index:2}.input-group-btn:first-child>.btn,.input-group-btn:first-child>.btn-group{margin-right:-1px}.input-group-btn:last-child>.btn,.input-group-btn:last-child>.btn-group{z-index:2;margin-left:-1px}.label{display:inline;padding:.2em .6em .3em;font-size:75%;font-weight:bold;line-height:1;color:#fff;text-align:center;white-space:nowrap;vertical-align:baseline;border-radius:.25em}a.label:hover,a.label:focus{color:#fff;text-decoration:none;cursor:pointer}.label:empty{display:none}.btn .label{position:relative;top:-1px}.label-default{background-color:#777}.label-default[href]:hover,.label-default[href]:focus{background-color:#5e5e5e}.label-primary{background-color:#337ab7}.label-primary[href]:hover,.label-primary[href]:focus{background-color:#286090}.label-success{background-color:#5cb85c}.label-success[href]:hover,.label-success[href]:focus{background-color:#449d44}.label-info{background-color:#5bc0de}.label-info[href]:hover,.label-info[href]:focus{background-color:#31b0d5}.label-warning{background-color:#f0ad4e}.label-warning[href]:hover,.label-warning[href]:focus{background-color:#ec971f}.label-danger{background-color:#d9534f}.label-danger[href]:hover,.label-danger[href]:focus{background-color:#c9302c}.clearfix:before,.clearfix:after,.dl-horizontal dd:before,.dl-horizontal dd:after,.container:before,.container:after,.container-fluid:before,.container-fluid:after,.row:before,.row:after,.form-horizontal .form-group:before,.form-horizontal .form-group:after{content:" ";display:table}.clearfix:after,.dl-horizontal dd:after,.container:after,.container-fluid:after,.row:after,.form-horizontal .form-group:after{clear:both}.center-block{display:block;margin-left:auto;margin-right:auto}.invisible{visibility:hidden}.text-hide{font:0/0 a;color:transparent;text-shadow:none;background-color:transparent;border:0}.affix{position:fixed}
+            .topfork {
+    position: absolute;
+    top: 75px;
+    right: 0;
+    border: 0;
+    display: none;
+}
+
+.portworx-logo {
+    margin-left: -20px;
+}
+
+.portworx-top {
+    padding: 25px 0 20px 30px;
+    margin: 0;
+    background: #ccc;
+}
+
+amp-sidebar {
+    width: 250px;
+    padding-right: 10px;
+}
+
+.portworx-menu-btn {
+    font-size: 2em;
+    float: right;
+    background: none;
+    border: 0;
+    padding: 0;
+}
+
+#sidebar {
+    padding: 10px;
+    background: #fff;
+    color: #333;
+    font-size: 0.9em;
+}
+
+#sidebar h4 {
+    border: 0;
+    background: #f1f1f1;
+    padding: 7px;
+    margin-bottom: 1px;
+    font-size: 1em;
+    font-weight: normal;
+}
+
+#sidebar h3 {
+    color: #F15A22;
+    font-weight: 100;
+    margin-top: 5px;
+}
+
+#sidebar h4:after {
+    content: '\25be';
+    float: right;
+}
+
+#sidebar ul.drop {
+    padding: 0;
+}
+
+#sidebar ul.drop li {
+    list-style-type: none;
+    background: #FAFAFA;
+    margin-top: 1px;
+    padding: 7px;
+}
+
+#sidebar section[expanded]>h4 {
+    color: #fff;
+    background: #F15A22;
+}
+
+ul#mysidebar>li.nopadd {
+    padding: 0 0 0 7px;
+}
+
+amp-img {
+    max-width: 100%;
+}
+
+amp-img > img {
+    object-fit: contain;
+}
+
+.launch-icon {
+    max-width: 64px
+}
+
+.slack-icon {
+    max-width: 48px;
+}
+
+.cf-stack {
+    max-width: 144px;
+}
+
+.amp-close-image {
+    float: right;
+}
+
+.google-search {
+    padding-bottom: 10px;
+}
+
+.google-search input {
+    font-size: 0.9em;
+    height: 25px;
+    padding: 5px;
+    background-image: url(https://www.google.com/favicon.ico);
+    background-size: 16px;
+    background-repeat: no-repeat;
+    background-position: 3px;
+    padding-left: 22px;
+}
+
+        </style>
+        <style amp-boilerplate>body{-webkit-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-moz-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-ms-animation:-amp-start 8s steps(1,end) 0s 1 normal both;animation:-amp-start 8s steps(1,end) 0s 1 normal both}@-webkit-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-moz-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-ms-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-o-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}</style><noscript><style amp-boilerplate>body{-webkit-animation:none;-moz-animation:none;-ms-animation:none;animation:none}</style></noscript>
+
+        <script async src="https://cdn.ampproject.org/v0.js"></script>
+        <script async custom-element="amp-sidebar" src="https://cdn.ampproject.org/v0/amp-sidebar-0.1.js"></script>
+        <script async custom-element="amp-accordion" src="https://cdn.ampproject.org/v0/amp-accordion-0.1.js"></script>
+        
+        
+        <script async custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>
+        <script async custom-element="amp-form" src="https://cdn.ampproject.org/v0/amp-form-0.1.js"></script>
+    </head>
+    <body>
+
+        <amp-analytics type="googleanalytics">
+            <script type="application/json">
+{
+  "extraUrlParams": {
+    "cg1": "Docs"
+  },
+  "vars": {
+    "account": "UA-64247527-2"
+  },
+  "triggers": {
+    "trackPageview": {
+      "on": "visible",
+      "request": "pageview"
+    }
+  }
+}
+            </script>
+        </amp-analytics>
+
+        <noscript>
+            Javascript required for AMP version of Portworx documentation. 
+            <a href="https://docs.portworx.com/scheduler/kubernetes/kafka-k8s.html">Click here</a> to go to the full documentation.
+        </noscript>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+<amp-sidebar id="sidebar" layout="nodisplay" side="right">
+
+  <amp-img class="amp-close-image"
+    src="/images/ic_close_black_18dp_2x.png"
+    width="20"
+    height="20"
+    alt="close sidebar"
+    on="tap:sidebar.close"
+    role="button"
+    tabindex="0"></amp-img>
+
+    <h3>Portworx Documentation</h3>
+
+    <form action="https://www.google.com/search" class="google-search" target="_top">
+        <input name="sitesearch" type="hidden" value="docs.portworx.com">
+        <input type="text" class="form-control" name="q" placeholder="Google Search">
+    </form>
+
+    <amp-accordion>
+        
+            
+<section>
+    <h4>Get Started</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/px-k8s-interactive.html" 
+                    >
+                    
+                        Interactive tutorials
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/#install-with-a-container-orchestrator" 
+                    >
+                    
+                        Install with a Container Orchestrator
+                    
+                </a>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Install with OCI runC and systemd</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/runc/" 
+                    >
+                    
+                        Install
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/runc/#upgrade-px-oci" 
+                    >
+                    
+                        Upgrade
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/runc/options.html" 
+                    >
+                    
+                        Install Arguments
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/developer/index.html" 
+                    >
+                    
+                        Developer Edition
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/getting-started/px-licensing.html" 
+                    >
+                    
+                        Licensing
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+        
+            
+<section>
+    <h4>Container Orchestrators</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Kubernetes</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/index.html" 
+                    >
+                    
+                        Portworx on Kubernetes
+                    
+                </a>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Install</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/openshift-install.html" 
+                    >
+                    
+                        Openshift
+                    
+                </a>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Amazon Web Services (AWS)</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/cloud/aws/kops-asg.html" 
+                    >
+                    
+                        Kubernetes Operations (KOPS)
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/px-k8s-asg.html" 
+                    >
+                    
+                        Auto Scaling Groups (ASG)
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/cloud/aws/eks.html" 
+                    >
+                    
+                        Elastic Kubernetes Service (EKS)
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/cloud/gcp/gke.html" 
+                    >
+                    
+                        GKE (Google Container Engine)
+                    
+                </a>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Azure</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/cloud/azure/aks.html" 
+                    >
+                    
+                        Azure Kubernetes Service (AKS)
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/cloud/azure/k8s-acs-engine.html" 
+                    >
+                    
+                        Azure Container Engine with Kubernetes
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/mesosphere-dcos/kubernetes.html" 
+                    >
+                    
+                        Kubernetes on DC/OS
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/install-pks.html" 
+                    >
+                    
+                        Kubernetes on PKS
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/cloud/ibm/ibm-cloud-iks.html" 
+                    >
+                    
+                        IBM Kubernetes Service (IKS)
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/install.html" 
+                    >
+                    
+                        Kubernetes (Other)
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/px-k8s-interactive.html" 
+                    >
+                    
+                        Interactive tutorials
+                    
+                </a>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Stateful applications</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/cassandra-k8s.html" 
+                    >
+                    
+                        Cassandra
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/kafka-k8s.html" 
+                    class="selected">
+                    
+                        <b>Kafka</b>
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/elasticstack-kibana-k8s.html" 
+                    >
+                    
+                        Elastic Search and Kibana
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/wp-k8s.html" 
+                    >
+                    
+                        WordPress and MySQL
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>How To</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Create PVCs and Snapshots</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/dynamic-provisioning.html" 
+                    >
+                    
+                        Dynamic Provisioning of PVCs
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/preprovisioned-volumes.html" 
+                    >
+                    
+                        Using Pre-provisioned Volumes
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/snaps.html" 
+                    >
+                    
+                        Create and use snapshots
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/shared-volumes.html" 
+                    >
+                    
+                        Create shared PVCs
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/resize-pvc.html" 
+                    >
+                    
+                        Resize PVCs
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/encrypted-volumes.html" 
+                    >
+                    
+                        Create encrypted PVCs
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/non-root.html" 
+                    >
+                    
+                        Access via non-root users
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/statefulsets.html" 
+                    >
+                    
+                        Run Statefulsets
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/failover.html" 
+                    >
+                    
+                        Test Failover
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/scheduler-convergence.html" 
+                    >
+                    
+                        Run Hyper Converged
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/secrets/portworx-with-kubernetes-secrets.html" 
+                    >
+                    
+                        Configure Kubernetes Secrets
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/update-px-geography.html" 
+                    >
+                    
+                        Update Portworx Geography Info
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Operate and Maintain</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/going-production-with-k8s.html" 
+                    >
+                    
+                        Running Portworx in Production with Kubernetes
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/upgrade.html" 
+                    >
+                    
+                        Upgrade
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/uninstall.html" 
+                    >
+                    
+                        Uninstall
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/k8s-scale-restrict.html" 
+                    >
+                    
+                        Scale or Restrict
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/support.html" 
+                    >
+                    
+                        Troubleshoot and Get Support
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/k8s-node-decommission.html" 
+                    >
+                    
+                        Decommission a node
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/k8s-node-maintenance.html" 
+                    >
+                    
+                        Enter Portworx maintenance mode
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/k8s-px-systemd-service.html" 
+                    >
+                    
+                        Control Portworx systemd service
+                    
+                </a>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Logging and Monitoring</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/logmanagement-efk-k8s.html" 
+                    >
+                    
+                        Manage PX logs using ELK and Fluentd
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/monitoring-px-prometheusAndGrafana.html" 
+                    >
+                    
+                        Manage PX using Prometheus and Grafana
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/stork.html" 
+                    >
+                    
+                        Using Stork
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/csi.html" 
+                    >
+                    
+                        Deploying using CSI
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/ark.html" 
+                    >
+                    
+                        Ark Plugin
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Mesosphere DC/OS</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/scheduler/mesosphere-dcos/install.html" 
+                    >
+                    
+                        Install
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/mesosphere-dcos/kubernetes.html" 
+                    >
+                    
+                        Kubernetes on DC/OS
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/mesosphere-dcos/install-universe.html" 
+                    >
+                    
+                        Universe for Air-gapped clusters
+                    
+                </a>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Stateful Frameworks</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/scheduler/mesosphere-dcos/frameworks.html" 
+                    >
+                    
+                        About
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/mesosphere-dcos/cassandra.html" 
+                    >
+                    
+                        Cassandra
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/mesosphere-dcos/hadoop-hdfs.html" 
+                    >
+                    
+                        HDFS &amp; Hadoop
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/mesosphere-dcos/kafka.html" 
+                    >
+                    
+                        Kafka
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/mesosphere-dcos/elasticsearch.html" 
+                    >
+                    
+                        Elasticsearch
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/mesosphere-dcos/couchdb.html" 
+                    >
+                    
+                        CouchDB
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/mesosphere-dcos/zookeeper.html" 
+                    >
+                    
+                        Zookeeper
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Operate and Maintain</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/scheduler/mesosphere-dcos/going-production-with-dcos.html" 
+                    >
+                    
+                        Running Portworx in Production with DC/OS
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/mesosphere-dcos/upgrade-oci.html" 
+                    >
+                    
+                        Upgrade
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/mesosphere-dcos/constraints.html" 
+                    >
+                    
+                        Constraining Applications to PX nodes
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/mesosphere-dcos/inline.html" 
+                    >
+                    
+                        Dynamically Creating Volumes
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/manage/update-px-geography.html" 
+                    >
+                    
+                        Update Portworx Geography Info
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/mesosphere-dcos/volume-scaling.html" 
+                    >
+                    
+                        Scaling Stateful Applications
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/mesosphere-dcos/framework-cleanup.html" 
+                    >
+                    
+                        Cleanup Frameworks
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>FAQ</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/scheduler/mesosphere-dcos/portworx-volumes.html" 
+                    >
+                    
+                        How Portworx Volumes work with DCOS
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Docker</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Install</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/scheduler/docker/install-standalone.html" 
+                    >
+                    
+                        Standalone
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/docker/install-swarm.html" 
+                    >
+                    
+                        Swarm
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/runc/#upgrade-px-oci" 
+                    >
+                    
+                        Upgrade
+                    
+                </a>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>How To</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/scheduler/docker/swarm.html" 
+                    >
+                    
+                        Use PX with Swarm
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/docker/volume-plugin.html" 
+                    >
+                    
+                        How Portworx Volumes work with Docker
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Rancher</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/scheduler/rancher/install.html" 
+                    >
+                    
+                        Install
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Nomad</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/scheduler/nomad/install.html" 
+                    >
+                    
+                        Install
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+    </ul>
+</section>
+        
+            
+<section>
+    <h4>About Data Volumes</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/manage/volumes.html" 
+                    >
+                    
+                        Create and Manage Data Volumes
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/manage/shared-volumes.html" 
+                    >
+                    
+                        Shared Volumes
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/manage/snapshots.html" 
+                    >
+                    
+                        Snapshots
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/manage/volume-update.html" 
+                    >
+                    
+                        Updating Volumes
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/manage/encrypted-volumes.html" 
+                    >
+                    
+                        Encrypted Volumes
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/manage/class-of-service.html" 
+                    >
+                    
+                        Class of Service
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/manage/update-px-geography.html" 
+                    >
+                    
+                        Update Portworx Geography Info
+                    
+                </a>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Legacy and External Access</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/applications/nfs.html" 
+                    >
+                    
+                        NFS
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/applications/object-storage.html" 
+                    >
+                    
+                        Object Storage
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+    </ul>
+</section>
+        
+            
+<section>
+    <h4>Cloud Reference Guides</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Amazon Web Services</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/cloud/aws/ec2.html" 
+                    >
+                    
+                        Amazon EC2 with EBS
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/cloud/aws/ecs.html" 
+                    >
+                    
+                        Amazon Elastic Container Service (ECS)
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/cloud/aws/eks.html" 
+                    >
+                    
+                        Amazon Elastic Kubernetes Service (EKS)
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/cloud/aws/kops-asg.html" 
+                    >
+                    
+                        KOPS (Kubernetes Operations)
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/cloud/aws/asg.html" 
+                    >
+                    
+                        Auto Scaling Group (ASG)
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/getting-started/diy.html" 
+                    >
+                    
+                        Cloud Formation, DIY Demo
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Microsoft Azure</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/cloud/azure/azure.html" 
+                    >
+                    
+                        Portworx on Azure
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/cloud/azure/aks.html" 
+                    >
+                    
+                        Azure Kubernetes Service (AKS)
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/cloud/azure/k8s-acs-engine.html" 
+                    >
+                    
+                        Azure Container Engine with Kubernetes
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/cloud/azure/dcos-acs-engine.html" 
+                    >
+                    
+                        Azure Container Engine with DCOS
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Google Cloud</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/cloud/gcp/gke.html" 
+                    >
+                    
+                        Google Kubernetes Engine (GKE)
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/cloud/gcp/gcp.html" 
+                    >
+                    
+                        Google Cloud Platform (GCP)
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/cloud/packet.html" 
+                    >
+                    
+                        Packet.net
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/cloud/digitalocean.html" 
+                    >
+                    
+                        DigitalOcean
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/cloud/rackspace.html" 
+                    >
+                    
+                        Rackspace
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/cloud/backups.html" 
+                    >
+                    
+                        Cloud Backups
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+        
+            
+<section>
+    <h4>CLI and API Reference</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>CLI</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/control/status.html" 
+                    >
+                    
+                        Basics
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/control/volume.html" 
+                    >
+                    
+                        Volume
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/control/snap.html" 
+                    >
+                    
+                        Snaps
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/control/groupsnap.html" 
+                    >
+                    
+                        Group Snaps
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/control/cloud.html" 
+                    >
+                    
+                        Cloud Snaps
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="#" 
+                    >
+                    
+                        Credentials
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/control/cluster.html" 
+                    >
+                    
+                        Cluster
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/control/service.html" 
+                    >
+                    
+                        Service
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/control/host.html" 
+                    >
+                    
+                        Host
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/control/credentials.html" 
+                    >
+                    
+                        Credentials
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/control/asg-clouddrive.html" 
+                    >
+                    
+                        CloudDrives (ASG)
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/control/license.html" 
+                    >
+                    
+                        License
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/runc/options.html" 
+                    >
+                    
+                        Installation Arguments to Portworx
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/control/openstorage-sdk.html" 
+                    >
+                    
+                        OpenStorage SDK
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/control/rest-api.html" 
+                    >
+                    
+                        REST API
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/control/config-json.html" 
+                    >
+                    
+                        Node config data
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+        
+            
+<section>
+    <h4>Operate and Maintain</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Monitoring and Alerts</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/maintain/monitoring/index.html" 
+                    >
+                    
+                        Monitoring
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/maintain/monitoring/prometheus/index.html" 
+                    >
+                    
+                        Prometheus
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/maintain/monitoring/alerting.html" 
+                    >
+                    
+                        Alerts integration with Prometheus
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/maintain/monitoring/grafana/index.html" 
+                    >
+                    
+                        Grafana
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/maintain/monitoring/portworx-alerts.html" 
+                    >
+                    
+                        Alerts Reference
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Performance and Tuning</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/maintain/performance/tuning.html" 
+                    >
+                    
+                        Tuning
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/maintain/performance/fio.html" 
+                    >
+                    
+                        FIO
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/maintain/performance/sql.html" 
+                    >
+                    
+                        SQL
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/maintain/performance/nosql.html" 
+                    >
+                    
+                        NOSQL
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/maintain/users-groups.html" 
+                    >
+                    
+                        Manage Users and Groups
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/maintain/upgrade.html" 
+                    >
+                    
+                        Upgrade Portworx
+                    
+                </a>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Capacity Management</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/maintain/scale-up.html" 
+                    >
+                    
+                        Add storage to nodes
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/maintain/scale-out.html" 
+                    >
+                    
+                        Scale up an existing cluster
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/maintain/scale-down.html" 
+                    >
+                    
+                        Scale down an existing cluster
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/maintain/storageless-nodes.html" 
+                    >
+                    
+                        Storage-less Nodes
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/maintain/maintenance-mode.html" 
+                    >
+                    
+                        Maintenance Mode
+                    
+                </a>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>DR Best Practices</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/maintain/etcd-consul-recovery.html" 
+                    >
+                    
+                        Etcd/Consul Recovery
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/maintain/dr-best-practices.html" 
+                    >
+                    
+                        PX Disaster Recovery
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+    </ul>
+</section>
+        
+            
+<section>
+    <h4>Application Solutions</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Big Data</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Cassandra</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/applications/cassandra.html" 
+                    >
+                    
+                        Deployment
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/applications/cassandra-px-perf-test.html" 
+                    >
+                    
+                        Measuring Performance
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/applications/cassandra-snaps.html" 
+                    >
+                    
+                        Snapshots
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/applications/hadoop-docker.html" 
+                    >
+                    
+                        Hadoop and HDFS
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Databases</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/applications/mysql.html" 
+                    >
+                    
+                        MySQL
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/applications/postgres.html" 
+                    >
+                    
+                        PostgreSQL
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/applications/mssql-server.html" 
+                    >
+                    
+                        Microsoft SQL Server
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Messaging</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/applications/redis.html" 
+                    >
+                    
+                        Redis
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/applications/kafka.html" 
+                    >
+                    
+                        Kafka
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/applications/docker-registry.html" 
+                    >
+                    
+                        Docker Registry
+                    
+                </a>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Wordpress</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/applications/docker-compose.html" 
+                    >
+                    
+                        Wordpress deployment by Docker
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/scheduler/kubernetes/wp-k8s.html" 
+                    >
+                    
+                        Wordpress deployment by Kubernetes
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/applications/jenkins.html" 
+                    >
+                    
+                        Jenkins
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+        
+            
+<section>
+    <h4>Key Management</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/secrets/portworx-with-vault.html" 
+                    >
+                    
+                        Portworx with Vault
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/secrets/portworx-with-aws-kms.html" 
+                    >
+                    
+                        Portworx with AWS KMS
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/secrets/portworx-with-kubernetes-secrets.html" 
+                    >
+                    
+                        Portworx with Kubernetes Secrets
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/secrets/portworx-with-dcos-secrets.html" 
+                    >
+                    
+                        Portworx with DC/OS Secrets
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/secrets/portworx-with-ibm-kp.html" 
+                    >
+                    
+                        Portworx with IBM Key Protect
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+        
+            
+<section>
+    <h4>Lighthouse</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/enterprise/lighthouse-new.html" 
+                    >
+                    
+                        Install Lighthouse
+                    
+                </a>
+            
+        </li>
+    
+        <li class="nopadd">
+            
+                <amp-accordion>
+                    
+<section>
+    <h4>Manage PX via Lighthouse</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/enterprise/lighthouse-volume-update.html" 
+                    >
+                    
+                        Update Volume
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/enterprise/lighthouse-new-create-credentials.html" 
+                    >
+                    
+                        Create Cloud Credentials
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/enterprise/lighthouse-snapshots.html" 
+                    >
+                    
+                        Create Volume Snapshots
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+                </amp-accordion>
+            
+        </li>
+    
+    </ul>
+</section>
+        
+            
+<section>
+    <h4>Knowledge Base</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/knowledgebase/sdn.html" 
+                    >
+                    
+                        Running with an SDN
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/knowledgebase/shared-mount-propagation.html" 
+                    >
+                    
+                        Shared Mount Propogation
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/knowledgebase/devicemapper.html" 
+                    >
+                    
+                        Devicemapper Thinpool setup
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/knowledgebase/docker-user-namespace.html" 
+                    >
+                    
+                        Docker User Namespaces
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/knowledgebase/faqs.html" 
+                    >
+                    
+                        FAQs
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+        
+            
+<section>
+    <h4>Release Notes</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/release-notes/portworx-enterprise.html" 
+                    >
+                    
+                        PX-Enterprise Release Notes
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/release-notes/on-premise-lighthouse.html" 
+                    >
+                    
+                        Lighthouse On-Prem Release Notes
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+        
+            
+<section>
+    <h4>Open Source Resources</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="https://github.com/libopenstorage" 
+                    >
+                    
+                        OpenStorage.org
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="https://github.com/libopenstorage/stork" 
+                    >
+                    
+                        STORK
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="https://github.com/portworx/torpedo" 
+                    >
+                    
+                        Torpedo for CSI and Kubernetes
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="https://github.com/portworx/lcfs" 
+                    >
+                    
+                        Graph Drivers for Docker
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+        
+            
+<section>
+    <h4>Video Demos</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="/video/mesos.html" 
+                    >
+                    
+                        Mesos, Mesosphere and Marathon
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/video/dcos.html" 
+                    >
+                    
+                        DCOS with Portworx
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/video/rancher.html" 
+                    >
+                    
+                        Rancher
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/video/shared-volumes.html" 
+                    >
+                    
+                        Shared Volumes
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/video/multi-cloud.html" 
+                    >
+                    
+                        Multi-cloud High Availability
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/video/quickstart.html" 
+                    >
+                    
+                        Portworx QuickStart Explainer
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/video/hadoop-px-dcos.html" 
+                    >
+                    
+                        Hadoop on Portworx on DCOS
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/video/sql-server.html" 
+                    >
+                    
+                        Microsoft SQL Server with High Availability
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="/video/sql-server-on-k8s.html" 
+                    >
+                    
+                        SQL Server on Kubernetes
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+        
+            
+<section>
+    <h4>Live Sandbox Demos</h4>
+    <ul id="mysidebar" class="nav drop">
+    
+        <li >
+            
+                <a href="https://katacoda.com/portworx/scenarios/deploy-px-k8s" 
+                    >
+                    
+                        Portworx on Kubernetes
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="https://katacoda.com/portworx/scenarios/px-k8s-vol-basic" 
+                    >
+                    
+                        Persistent Volumes on Kubernetes
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="https://katacoda.com/portworx/scenarios/px-k8s-vol-shared" 
+                    >
+                    
+                        Portworx Shared Volumes on Kubernetes
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="https://www.katacoda.com/portworx/scenarios/px-k8s-postgres-all-in-one" 
+                    >
+                    
+                        Deploying HA PostgreSQL on Kubernetes
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="https://www.katacoda.com/portworx/scenarios/px-kafka" 
+                    >
+                    
+                        Deploying Kafka and Zookeeper on Kubernetes
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="https://www.katacoda.com/portworx/scenarios/px-cassandra" 
+                    >
+                    
+                        Deploying Cassandra on Kubernetes
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="https://www.katacoda.com/portworx/scenarios/px-mysql" 
+                    >
+                    
+                        Deploying MySQL on Kubernetes
+                    
+                </a>
+            
+        </li>
+    
+        <li >
+            
+                <a href="https://www.katacoda.com/portworx/scenarios/px-minio" 
+                    >
+                    
+                        Minio on Kubernetes for Portworx Backups
+                    
+                </a>
+            
+        </li>
+    
+    </ul>
+</section>
+        
+    </amp-accordion>
+
+</amp-sidebar>
+
+        <div class="row portworx-top">
+            <div class="col-xs-6 portworx-logo">
+                <a href="/">
+                    <amp-img src="/images/px-logo.png" height="50px" width="138px">
+                </a>
+            </div>
+            <div class="col-xs-6">
+                <button on="tap:sidebar.toggle" class="ampstart-btn caps m2 portworx-menu-btn">&#9776;</button>
+            </div>
+        </div>
+
+        <div class="container">
+            <h1 class="post-title">
+                Deploy Apache Kafka and Zookeeper with Portworx on Kubernetes
+            </h1>
+
+            <ul id="markdown-toc">
+  <li><a href="#prerequisites" id="markdown-toc-prerequisites">Prerequisites</a></li>
+  <li><a href="#install" id="markdown-toc-install">Install</a>    <ul>
+      <li><a href="#rbac-changes-needed--if-kubernetes-18" id="markdown-toc-rbac-changes-needed--if-kubernetes-18">RBAC changes needed , if Kubernetes 1.8+</a></li>
+      <li><a href="#portworx-storageclass-for-volume-provisioning" id="markdown-toc-portworx-storageclass-for-volume-provisioning">Portworx StorageClass for Volume Provisioning</a></li>
+      <li><a href="#install-zookeeper" id="markdown-toc-install-zookeeper">Install Zookeeper</a></li>
+      <li><a href="#post-install-status---zookeeper" id="markdown-toc-post-install-status---zookeeper">Post Install Status - Zookeeper</a></li>
+      <li><a href="#install-kafka" id="markdown-toc-install-kafka">Install Kafka</a></li>
+      <li><a href="#post-install-status---kafka" id="markdown-toc-post-install-status---kafka">Post Install Status - Kafka</a>        <ul>
+          <li><a href="#verifying-the-kafka-installation" id="markdown-toc-verifying-the-kafka-installation">Verifying the Kafka installation</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><a href="#scaling" id="markdown-toc-scaling">Scaling</a></li>
+  <li><a href="#failover" id="markdown-toc-failover">Failover</a>    <ul>
+      <li><a href="#pod-failover-for-zookeeper" id="markdown-toc-pod-failover-for-zookeeper">Pod Failover for Zookeeper</a></li>
+      <li><a href="#pod-failover-for-kafka" id="markdown-toc-pod-failover-for-kafka">Pod Failover for Kafka</a></li>
+      <li><a href="#node-failover" id="markdown-toc-node-failover">Node Failover</a></li>
+    </ul>
+  </li>
+</ul>
+
+<p>These below instructions will provide you a step by step guide in deploying Apache Kafka and Zookeeper with Portworx on Kubernetes.
+Both these deployments will use stork as the scheduler to enable their pods to be placed closer to where their data is located.</p>
+
+<p>Kubernetes provides management of stateful workloads using Statefulsets. Apache Kafka is a distributed streaming platform. <a href="https://kafka.apache.org/">Apache Kafka</a> is used in multiple cases where the need might be to provide realtime streaming of data to systems or in using it as an enterprise messaging system. 
+Apache Kafka uses <a href="https://zookeeper.apache.org/">Zookeeper</a> for maintaining configurations and distributed synchronization.</p>
+
+<h2 id="prerequisites">Prerequisites</h2>
+
+<ul>
+  <li>A running Kubernetes cluster with v 1.6+</li>
+  <li>All the kubernetes nodes should allow <a href="https://docs.portworx.com/knowledgebase/shared-mount-propagation.html">shared mount propagation</a>. PX requires this since it provisions volumes in containers.</li>
+  <li><a href="https://docs.portworx.com/scheduler/kubernetes/install.html">Deploy Portworx on your kubernetes cluster</a>. PX runs on each node of your kubernetes cluster as a daemonset.</li>
+</ul>
+
+<h2 id="install">Install</h2>
+
+<h3 id="rbac-changes-needed--if-kubernetes-18">RBAC changes needed , if Kubernetes 1.8+</h3>
+
+<p>Create ClusterRole and ClusterRoleBinding to give permission to get nodes.
+Create <code class="highlighter-rouge">node-reader.yaml</code> with the following content.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: node-reader
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: kafka-node-reader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: node-reader
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: kafka
+</code></pre></div></div>
+
+<p>Apply the manifest</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f node-reader.yaml
+</code></pre></div></div>
+
+<h3 id="portworx-storageclass-for-volume-provisioning">Portworx StorageClass for Volume Provisioning</h3>
+
+<p>Portworx provides volume(s) to Zookeeper as well as Kafka. 
+Create <code class="highlighter-rouge">portworx-sc.yaml</code> with Portworx as the provisioner and apply the configuration</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: portworx-sc
+provisioner: kubernetes.io/portworx-volume
+parameters:
+  repl: "1"
+  priority_io: "high"
+  group: "zk_vg"
+  fg: "true"
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: portworx-sc-rep2
+provisioner: kubernetes.io/portworx-volume
+parameters:
+  repl: "2"
+  priority_io: "high"
+  group: "kafka_vg"
+  fg: "true"
+---
+
+kubectl apply -f portworx-sc.yaml
+	
+</code></pre></div></div>
+
+<h3 id="install-zookeeper">Install Zookeeper</h3>
+
+<p>A statefulset in Kubernetes requires a headless service to provide network identity to the pods it creates. 
+This is also important for the later stages of the deployment of Kafka, since, we would need to access Zookeeper via the dns records that are created by this headless service.</p>
+
+<p>Create <code class="highlighter-rouge">zookeeper-all.yaml</code> with the below content.</p>
+
+<p>This spec a headless service, a config map, a PodDisruption budget and the Zookeeper Statefulset.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apiVersion: v1
+kind: Service
+metadata:
+  name: zk-headless
+  labels:
+    app: zk-headless
+spec:
+  ports:
+  - port: 2888
+    name: server
+  - port: 3888
+    name: leader-election
+  clusterIP: None
+  selector:
+    app: zk
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zk-config
+data:
+  ensemble: "zk-0;zk-1;zk-2"
+  jvm.heap: "2G"
+  tick: "2000"
+  init: "10"
+  sync: "5"
+  client.cnxns: "60"
+  snap.retain: "3"
+  purge.interval: "1"
+---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: zk-budget
+spec:
+  selector:
+    matchLabels:
+      app: zk
+  minAvailable: 2
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: zk
+spec:
+  serviceName: zk-headless
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: zk
+      annotations:
+        pod.alpha.kubernetes.io/initialized: "true"
+    spec:
+      # Use the stork scheduler to enable more efficient placement of the pods
+      schedulerName: stork
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: px/running
+                operator: NotIn
+                values:
+                - "false"
+              - key: px/enabled
+                operator: NotIn
+                values:
+                - "false"
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values: 
+                    - zk-headless
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: k8szk
+        imagePullPolicy: Always
+        image: gcr.io/google_samples/k8szk:v1
+        ports:
+        - containerPort: 2181
+          name: client
+        - containerPort: 2888
+          name: server
+        - containerPort: 3888
+          name: leader-election
+        env:
+        - name : ZK_ENSEMBLE
+          valueFrom:
+            configMapKeyRef:
+              name: zk-config
+              key: ensemble
+        - name : ZK_HEAP_SIZE
+          valueFrom:
+            configMapKeyRef:
+                name: zk-config
+                key: jvm.heap
+        - name : ZK_TICK_TIME
+          valueFrom:
+            configMapKeyRef:
+                name: zk-config
+                key: tick
+        - name : ZK_INIT_LIMIT
+          valueFrom:
+            configMapKeyRef:
+                name: zk-config
+                key: init
+        - name : ZK_SYNC_LIMIT
+          valueFrom:
+            configMapKeyRef:
+                name: zk-config
+                key: tick
+        - name : ZK_MAX_CLIENT_CNXNS
+          valueFrom:
+            configMapKeyRef:
+                name: zk-config
+                key: client.cnxns
+        - name: ZK_SNAP_RETAIN_COUNT
+          valueFrom:
+            configMapKeyRef:
+                name: zk-config
+                key: snap.retain
+        - name: ZK_PURGE_INTERVAL
+          valueFrom:
+            configMapKeyRef:
+                name: zk-config
+                key: purge.interval
+        - name: ZK_CLIENT_PORT
+          value: "2181"
+        - name: ZK_SERVER_PORT
+          value: "2888"
+        - name: ZK_ELECTION_PORT
+          value: "3888"
+        command:
+        - sh
+        - -c
+        - zkGenConfig.sh &amp;&amp; zkServer.sh start-foreground
+        readinessProbe:
+          exec:
+            command:
+            - "zkOk.sh"
+          initialDelaySeconds: 15
+          timeoutSeconds: 5
+        livenessProbe:
+          exec:
+            command:
+            - "zkOk.sh"
+          initialDelaySeconds: 15
+          timeoutSeconds: 5
+        volumeMounts:
+        - name: datadir
+          mountPath: /var/lib/zookeeper
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+  volumeClaimTemplates:
+  - metadata:
+      name: datadir
+    spec:
+      storageClassName: portworx-sc
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 2Gi
+</code></pre></div></div>
+
+<p>Apply this configuration</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f zookeeper-all.yaml
+</code></pre></div></div>
+
+<h3 id="post-install-status---zookeeper">Post Install Status - Zookeeper</h3>
+
+<p>Verify that the zookeeper pods are running with provisioned Portworx volumes.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get pods 
+NAME      READY     STATUS    RESTARTS   AGE
+zk-0      1/1       Running   0          23h
+zk-1      1/1       Running   0          23h
+zk-2      1/1       Running   0          23h
+
+kubectl get pvc
+NAME        STATUS    VOLUME                                     CAPACITY   ACCESSMODES   STORAGECLASS   AGE
+data-zk-0   Bound     pvc-b79e96e9-7b79-11e7-a940-42010a8c0002   3Gi        RWO           portworx-sc    23h
+data-zk-1   Bound     pvc-faaedef8-7b7a-11e7-a940-42010a8c0002   3Gi        RWO           portworx-sc    23h
+data-zk-2   Bound     pvc-0e7a636d-7b7b-11e7-a940-42010a8c0002   3Gi        RWO           portworx-sc    23h
+
+kubectl get sts
+NAME      DESIRED   CURRENT   AGE
+zk        3         3         1d
+
+/opt/pwx/bin/pxctl v i pvc-b79e96e9-7b79-11e7-a940-42010a8c0002
+
+Volume  :  816480848884203913
+        Name                     :  pvc-b79e96e9-7b79-11e7-a940-42010a8c0002
+        Size                     :  3.0 GiB
+        Format                   :  ext4
+        HA                       :  1
+        IO Priority              :  LOW
+        Creation time            :  Aug 7 14:07:16 UTC 2017
+        Shared                   :  no
+        Status                   :  up
+        State                    :  Attached: k8s-0
+        Device Path              :  /dev/pxd/pxd816480848884203913
+        Labels                   :  pvc=data-zk-0
+        Reads                    :  59
+        Reads MS                 :  252
+        Bytes Read               :  466944
+        Writes                   :  816
+        Writes MS                :  3608
+        Bytes Written            :  53018624
+        IOs in progress          :  0
+        Bytes used               :  65 MiB
+        Replica sets on nodes:
+                Set  0
+                        Node     :  10.140.0.5
+
+</code></pre></div></div>
+
+<p>Verify that the Zookeeper ensemble is working.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl exec zk-0 -- /opt/zookeeper/bin/zkCli.sh create /foo bar
+
+WATCHER::
+WatchedEvent state:SyncConnected type:None path:null
+Created /foo
+
+kubectl exec zk-2 -- /opt/zookeeper/bin/zkCli.sh get /foo
+
+WATCHER::
+WatchedEvent state:SyncConnected type:None path:null
+cZxid = 0x10000004d
+bar
+ctime = Tue Aug 08 14:18:11 UTC 2017
+mZxid = 0x10000004d
+mtime = Tue Aug 08 14:18:11 UTC 2017
+pZxid = 0x10000004d
+cversion = 0
+dataVersion = 0
+aclVersion = 0
+ephemeralOwner = 0x0
+dataLength = 3
+numChildren = 0
+
+</code></pre></div></div>
+
+<h3 id="install-kafka">Install Kafka</h3>
+
+<p>Obtain the Zookeeper node FQDN to be used in the configuration for Kafka.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>for i in 0 1 2; do kubectl exec zk-$i -- hostname -f; done
+
+zk-0.zk-headless.default.svc.cluster.local
+zk-1.zk-headless.default.svc.cluster.local
+zk-2.zk-headless.default.svc.cluster.local
+</code></pre></div></div>
+
+<p>Create <code class="highlighter-rouge">kafka-all.yaml</code> with the following contents.<code class="highlighter-rouge">For Kubernetes 1.9.6+ , see below</code> Note the property <code class="highlighter-rouge">zookeeper.connect</code>. This points to the zookeeper nodes’ FQDN obtained earlier.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kafka
+---
+kind: ConfigMap
+metadata:
+  name: broker-config
+  namespace: kafka
+apiVersion: v1
+data:
+  init.sh: |-
+    #!/bin/bash
+    set -x
+
+    KAFKA_BROKER_ID=${HOSTNAME##*-}
+    sed -i "s/#init#broker.id=#init#/broker.id=$KAFKA_BROKER_ID/" /etc/kafka/server.properties
+
+    hash kubectl 2&gt;/dev/null || {
+      sed -i "s/#init#broker.rack=#init#/#init#broker.rack=# kubectl not found in path/" /etc/kafka/server.properties
+    } &amp;&amp; {
+      ZONE=$(kubectl get node "$NODE_NAME" -o=go-template='{{index .metadata.labels "failure-domain.beta.kubernetes.io/zone"}}')
+      if [ $? -ne 0 ]; then
+        sed -i "s/#init#broker.rack=#init#/#init#broker.rack=# zone lookup failed, see -c init-config logs/" /etc/kafka/server.properties
+      elif [ "x$ZONE" == "x&lt;no value&gt;" ]; then
+        sed -i "s/#init#broker.rack=#init#/#init#broker.rack=# zone label not found for node $NODE_NAME/" /etc/kafka/server.properties
+      else
+        sed -i "s/#init#broker.rack=#init#/broker.rack=$ZONE/" /etc/kafka/server.properties
+      fi
+    }
+
+  server.properties: |-
+    delete.topic.enable=true
+    num.network.threads=3
+    num.io.threads=8
+    socket.send.buffer.bytes=102400
+    socket.receive.buffer.bytes=102400
+    socket.request.max.bytes=104857600
+    log.dirs=/tmp/kafka-logs
+    num.partitions=1
+    num.recovery.threads.per.data.dir=1
+    offsets.topic.replication.factor=1
+    transaction.state.log.replication.factor=1
+    transaction.state.log.min.isr=1
+    log.retention.hours=168
+    log.segment.bytes=1073741824
+    log.retention.check.interval.ms=300000
+    zookeeper.connect=zk-0.zk-headless.default.svc.cluster.local:2181,zk-1.zk-headless.default.svc.cluster.local:2181,zk-2.zk-headless.default.svc.cluster.local:2181
+    zookeeper.connection.timeout.ms=6000
+    group.initial.rebalance.delay.ms=0
+
+  log4j.properties: |-
+    log4j.rootLogger=INFO, stdout
+
+    log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+    log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+    log4j.appender.stdout.layout.ConversionPattern=[%d] %p %m (%c)%n
+
+    log4j.appender.kafkaAppender=org.apache.log4j.DailyRollingFileAppender
+    log4j.appender.kafkaAppender.DatePattern='.'yyyy-MM-dd-HH
+    log4j.appender.kafkaAppender.File=${kafka.logs.dir}/server.log
+    log4j.appender.kafkaAppender.layout=org.apache.log4j.PatternLayout
+    log4j.appender.kafkaAppender.layout.ConversionPattern=[%d] %p %m (%c)%n
+
+    log4j.appender.stateChangeAppender=org.apache.log4j.DailyRollingFileAppender
+    log4j.appender.stateChangeAppender.DatePattern='.'yyyy-MM-dd-HH
+    log4j.appender.stateChangeAppender.File=${kafka.logs.dir}/state-change.log
+    log4j.appender.stateChangeAppender.layout=org.apache.log4j.PatternLayout
+    log4j.appender.stateChangeAppender.layout.ConversionPattern=[%d] %p %m (%c)%n
+
+    log4j.appender.requestAppender=org.apache.log4j.DailyRollingFileAppender
+    log4j.appender.requestAppender.DatePattern='.'yyyy-MM-dd-HH
+    log4j.appender.requestAppender.File=${kafka.logs.dir}/kafka-request.log
+    log4j.appender.requestAppender.layout=org.apache.log4j.PatternLayout
+    log4j.appender.requestAppender.layout.ConversionPattern=[%d] %p %m (%c)%n
+
+    log4j.appender.cleanerAppender=org.apache.log4j.DailyRollingFileAppender
+    log4j.appender.cleanerAppender.DatePattern='.'yyyy-MM-dd-HH
+    log4j.appender.cleanerAppender.File=${kafka.logs.dir}/log-cleaner.log
+    log4j.appender.cleanerAppender.layout=org.apache.log4j.PatternLayout
+    log4j.appender.cleanerAppender.layout.ConversionPattern=[%d] %p %m (%c)%n
+
+    log4j.appender.controllerAppender=org.apache.log4j.DailyRollingFileAppender
+    log4j.appender.controllerAppender.DatePattern='.'yyyy-MM-dd-HH
+    log4j.appender.controllerAppender.File=${kafka.logs.dir}/controller.log
+    log4j.appender.controllerAppender.layout=org.apache.log4j.PatternLayout
+    log4j.appender.controllerAppender.layout.ConversionPattern=[%d] %p %m (%c)%n
+
+    log4j.appender.authorizerAppender=org.apache.log4j.DailyRollingFileAppender
+    log4j.appender.authorizerAppender.DatePattern='.'yyyy-MM-dd-HH
+    log4j.appender.authorizerAppender.File=${kafka.logs.dir}/kafka-authorizer.log
+    log4j.appender.authorizerAppender.layout=org.apache.log4j.PatternLayout
+    log4j.appender.authorizerAppender.layout.ConversionPattern=[%d] %p %m (%c)%n
+
+    # Change the two lines below to adjust ZK client logging
+    log4j.logger.org.I0Itec.zkclient.ZkClient=INFO
+    log4j.logger.org.apache.zookeeper=INFO
+
+    # Change the two lines below to adjust the general broker logging level (output to server.log and stdout)
+    log4j.logger.kafka=INFO
+    log4j.logger.org.apache.kafka=INFO
+
+    # Change to DEBUG or TRACE to enable request logging
+    log4j.logger.kafka.request.logger=WARN, requestAppender
+    log4j.additivity.kafka.request.logger=false
+
+    log4j.logger.kafka.network.RequestChannel$=WARN, requestAppender
+    log4j.additivity.kafka.network.RequestChannel$=false
+
+    log4j.logger.kafka.controller=TRACE, controllerAppender
+    log4j.additivity.kafka.controller=false
+
+    log4j.logger.kafka.log.LogCleaner=INFO, cleanerAppender
+    log4j.additivity.kafka.log.LogCleaner=false
+
+    log4j.logger.state.change.logger=TRACE, stateChangeAppender
+    log4j.additivity.state.change.logger=false
+
+    log4j.logger.kafka.authorizer.logger=WARN, authorizerAppender
+    log4j.additivity.kafka.authorizer.logger=false
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: broker
+  namespace: kafka
+spec:
+  ports:
+  - port: 9092
+  # [podname].broker.kafka.svc.cluster.local
+  clusterIP: None
+  selector:
+    app: kafka
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: kafka
+  namespace: kafka
+spec:
+  serviceName: "broker"
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: kafka
+      annotations:
+    spec:
+      # Use the stork scheduler to enable more efficient placement of the pods
+      schedulerName: stork
+      terminationGracePeriodSeconds: 30
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: px/running
+                operator: NotIn
+                values:
+                - "false"
+              - key: px/enabled
+                operator: NotIn
+                values:
+                - "false"
+      initContainers:
+      - name: init-config
+        image: solsson/kafka-initutils@sha256:c275d681019a0d8f01295dbd4a5bae3cfa945c8d0f7f685ae1f00f2579f08c7d
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        command: ['/bin/bash', '/etc/kafka/init.sh']
+        volumeMounts:
+        - name: config
+          mountPath: /etc/kafka
+      containers:
+      - name: broker
+        image: solsson/kafka:0.11.0.0@sha256:b27560de08d30ebf96d12e74f80afcaca503ad4ca3103e63b1fd43a2e4c976ce
+        env:
+        - name: KAFKA_LOG4J_OPTS
+          value: -Dlog4j.configuration=file:/etc/kafka/log4j.properties
+        ports:
+        - containerPort: 9092
+        command:
+        - ./bin/kafka-server-start.sh
+        - /etc/kafka/server.properties
+        - --override
+        -   zookeeper.connect=zk-0.zk-headless.default.svc.cluster.local:2181,zk-1.zk-headless.default.svc.cluster.local:2181,zk-2.zk-headless.default.svc.cluster.local:2181
+        - --override
+        -   log.retention.hours=-1
+        - --override
+        -   log.dirs=/var/lib/kafka/data/topics
+        - --override
+        -   auto.create.topics.enable=false
+        resources:
+          requests:
+            cpu: 100m
+            memory: 512Mi
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - 'echo "" | nc -w 1 127.0.0.1 9092'
+        volumeMounts:
+        - name: config
+          mountPath: /etc/kafka
+        - name: data
+          mountPath: /var/lib/kafka/data
+      volumes:
+      - name: config
+        configMap:
+          name: broker-config
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      storageClassName: portworx-sc-rep2
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 3Gi
+---
+
+</code></pre></div></div>
+<p>Use the below contents in <code class="highlighter-rouge">kafka-all.yaml</code> for <code class="highlighter-rouge">Kubernetes 1.9.6+</code></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kafka
+---
+kind: ConfigMap
+metadata:
+  name: broker-config
+  namespace: kafka
+apiVersion: v1
+data:
+  init.sh: |-
+    #!/bin/bash
+    set -x
+
+    KAFKA_BROKER_ID=${HOSTNAME##*-}
+    cp -Lur /etc/kafka-configmap/* /etc/kafka/
+    sed -i "s/#init#broker.id=#init#/broker.id=$KAFKA_BROKER_ID/" /etc/kafka/server.properties
+
+    hash kubectl 2&gt;/dev/null || {
+      sed -i "s/#init#broker.rack=#init#/#init#broker.rack=# kubectl not found in path/" /etc/kafka/server.properties
+    } &amp;&amp; {
+      ZONE=$(kubectl get node "$NODE_NAME" -o=go-template='{{index .metadata.labels "failure-domain.beta.kubernetes.io/zone"}}')
+      if [ $? -ne 0 ]; then
+        sed -i "s/#init#broker.rack=#init#/#init#broker.rack=# zone lookup failed, see -c init-config logs/" /etc/kafka/server.properties
+      elif [ "x$ZONE" == "x&lt;no value&gt;" ]; then
+        sed -i "s/#init#broker.rack=#init#/#init#broker.rack=# zone label not found for node $NODE_NAME/" /etc/kafka/server.properties
+      else
+        sed -i "s/#init#broker.rack=#init#/broker.rack=$ZONE/" /etc/kafka/server.properties
+      fi
+    }
+
+  server.properties: |-
+    delete.topic.enable=true
+    num.network.threads=3
+    num.io.threads=8
+    socket.send.buffer.bytes=102400
+    socket.receive.buffer.bytes=102400
+    socket.request.max.bytes=104857600
+    log.dirs=/tmp/kafka-logs
+    num.partitions=1
+    num.recovery.threads.per.data.dir=1
+    offsets.topic.replication.factor=1
+    transaction.state.log.replication.factor=1
+    transaction.state.log.min.isr=1
+    log.retention.hours=168
+    log.segment.bytes=1073741824
+    log.retention.check.interval.ms=300000
+    zookeeper.connect=zk-0.zk-headless.default.svc.cluster.local:2181,zk-1.zk-headless.default.svc.cluster.local:2181,zk-2.zk-headless.default.svc.cluster.local:2181
+    zookeeper.connection.timeout.ms=6000
+    group.initial.rebalance.delay.ms=0
+
+  log4j.properties: |-
+    log4j.rootLogger=INFO, stdout
+
+    log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+    log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+    log4j.appender.stdout.layout.ConversionPattern=[%d] %p %m (%c)%n
+
+    log4j.appender.kafkaAppender=org.apache.log4j.DailyRollingFileAppender
+    log4j.appender.kafkaAppender.DatePattern='.'yyyy-MM-dd-HH
+    log4j.appender.kafkaAppender.File=${kafka.logs.dir}/server.log
+    log4j.appender.kafkaAppender.layout=org.apache.log4j.PatternLayout
+    log4j.appender.kafkaAppender.layout.ConversionPattern=[%d] %p %m (%c)%n
+
+    log4j.appender.stateChangeAppender=org.apache.log4j.DailyRollingFileAppender
+    log4j.appender.stateChangeAppender.DatePattern='.'yyyy-MM-dd-HH
+    log4j.appender.stateChangeAppender.File=${kafka.logs.dir}/state-change.log
+    log4j.appender.stateChangeAppender.layout=org.apache.log4j.PatternLayout
+    log4j.appender.stateChangeAppender.layout.ConversionPattern=[%d] %p %m (%c)%n
+
+    log4j.appender.requestAppender=org.apache.log4j.DailyRollingFileAppender
+    log4j.appender.requestAppender.DatePattern='.'yyyy-MM-dd-HH
+    log4j.appender.requestAppender.File=${kafka.logs.dir}/kafka-request.log
+    log4j.appender.requestAppender.layout=org.apache.log4j.PatternLayout
+    log4j.appender.requestAppender.layout.ConversionPattern=[%d] %p %m (%c)%n
+
+    log4j.appender.cleanerAppender=org.apache.log4j.DailyRollingFileAppender
+    log4j.appender.cleanerAppender.DatePattern='.'yyyy-MM-dd-HH
+    log4j.appender.cleanerAppender.File=${kafka.logs.dir}/log-cleaner.log
+    log4j.appender.cleanerAppender.layout=org.apache.log4j.PatternLayout
+    log4j.appender.cleanerAppender.layout.ConversionPattern=[%d] %p %m (%c)%n
+
+    log4j.appender.controllerAppender=org.apache.log4j.DailyRollingFileAppender
+    log4j.appender.controllerAppender.DatePattern='.'yyyy-MM-dd-HH
+    log4j.appender.controllerAppender.File=${kafka.logs.dir}/controller.log
+    log4j.appender.controllerAppender.layout=org.apache.log4j.PatternLayout
+    log4j.appender.controllerAppender.layout.ConversionPattern=[%d] %p %m (%c)%n
+
+    log4j.appender.authorizerAppender=org.apache.log4j.DailyRollingFileAppender
+    log4j.appender.authorizerAppender.DatePattern='.'yyyy-MM-dd-HH
+    log4j.appender.authorizerAppender.File=${kafka.logs.dir}/kafka-authorizer.log
+    log4j.appender.authorizerAppender.layout=org.apache.log4j.PatternLayout
+    log4j.appender.authorizerAppender.layout.ConversionPattern=[%d] %p %m (%c)%n
+
+    # Change the two lines below to adjust ZK client logging
+    log4j.logger.org.I0Itec.zkclient.ZkClient=INFO
+    log4j.logger.org.apache.zookeeper=INFO
+
+    # Change the two lines below to adjust the general broker logging level (output to server.log and stdout)
+    log4j.logger.kafka=INFO
+    log4j.logger.org.apache.kafka=INFO
+
+    # Change to DEBUG or TRACE to enable request logging
+    log4j.logger.kafka.request.logger=WARN, requestAppender
+    log4j.additivity.kafka.request.logger=false
+
+    log4j.logger.kafka.network.RequestChannel$=WARN, requestAppender
+    log4j.additivity.kafka.network.RequestChannel$=false
+
+    log4j.logger.kafka.controller=TRACE, controllerAppender
+    log4j.additivity.kafka.controller=false
+
+    log4j.logger.kafka.log.LogCleaner=INFO, cleanerAppender
+    log4j.additivity.kafka.log.LogCleaner=false
+
+    log4j.logger.state.change.logger=TRACE, stateChangeAppender
+    log4j.additivity.state.change.logger=false
+
+    log4j.logger.kafka.authorizer.logger=WARN, authorizerAppender
+    log4j.additivity.kafka.authorizer.logger=false
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: broker
+  namespace: kafka
+spec:
+  ports:
+  - port: 9092
+  # [podname].broker.kafka.svc.cluster.local
+  clusterIP: None
+  selector:
+    app: kafka
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: kafka
+  namespace: kafka
+spec:
+  serviceName: "broker"
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: kafka
+      annotations:
+    spec:
+      # Use the stork scheduler to enable more efficient placement of the pods
+      schedulerName: stork
+      terminationGracePeriodSeconds: 30
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: px/running
+                operator: NotIn
+                values:
+                - "false"
+              - key: px/enabled
+                operator: NotIn
+                values:
+                - "false"
+      initContainers:
+      - name: init-config
+        image: solsson/kafka-initutils@sha256:c275d681019a0d8f01295dbd4a5bae3cfa945c8d0f7f685ae1f00f2579f08c7d
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        command: ['/bin/bash', '/etc/kafka-configmap/init.sh']
+        volumeMounts:
+        - name: configmap
+          mountPath: /etc/kafka-configmap
+        - name: config
+          mountPath: /etc/kafka
+      containers:
+      - name: broker
+        image: solsson/kafka:0.11.0.0@sha256:b27560de08d30ebf96d12e74f80afcaca503ad4ca3103e63b1fd43a2e4c976ce
+        env:
+        - name: KAFKA_LOG4J_OPTS
+          value: -Dlog4j.configuration=file:/etc/kafka/log4j.properties
+        ports:
+        - containerPort: 9092
+        command:
+        - ./bin/kafka-server-start.sh
+        - /etc/kafka/server.properties
+        - --override
+        -   zookeeper.connect=zk-0.zk-headless.default.svc.cluster.local:2181,zk-1.zk-headless.default.svc.cluster.local:2181,zk-2.zk-headless.default.svc.cluster.local:2181
+        - --override
+        -   log.retention.hours=-1
+        - --override
+        -   log.dirs=/var/lib/kafka/data/topics
+        - --override
+        -   auto.create.topics.enable=false
+        resources:
+          requests:
+            cpu: 100m
+            memory: 512Mi
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - 'echo "" | nc -w 1 127.0.0.1 9092'
+        volumeMounts:
+        - name: config
+          mountPath: /etc/kafka
+        - name: data
+          mountPath: /var/lib/kafka/data
+      volumes:
+      - name: configmap
+        configMap:
+          name: broker-config
+      - name: config
+        emptyDir: {}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      storageClassName: portworx-sc-rep2
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 3Gi
+---
+
+</code></pre></div></div>
+
+<p>Apply the manifest</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f kafka-all.yaml
+</code></pre></div></div>
+
+<h3 id="post-install-status---kafka">Post Install Status - Kafka</h3>
+
+<p>Verify Kafka resources created on the cluster.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get pods -l "app=kafka" -n kafka -w
+NAME      READY     STATUS     RESTARTS   AGE
+kafka-0   1/1       Running    0          17s
+kafka-1   0/1       Init:0/1   0          3s
+kafka-1   0/1       Init:0/1   0         4s
+kafka-1   0/1       PodInitializing   0         5s
+kafka-1   0/1       Running   0         6s
+kafka-1   1/1       Running   0         9s
+kafka-2   0/1       Pending   0         0s
+kafka-2   0/1       Pending   0         1s
+kafka-2   0/1       Pending   0         3s
+kafka-2   0/1       Init:0/1   0         4s
+kafka-2   0/1       Init:0/1   0         6s
+kafka-2   0/1       PodInitializing   0         8s
+kafka-2   0/1       Running   0         9s
+kafka-2   1/1       Running   0         15s
+
+kubectl get pvc -n kafka
+NAME           STATUS    VOLUME                                     CAPACITY   ACCESSMODES   STORAGECLASS       AGE
+data-kafka-0   Bound     pvc-c405b033-7c4b-11e7-a940-42010a8c0002   3Gi        RWO           portworx-sc-rep2   1m
+data-kafka-1   Bound     pvc-cc70447a-7c4b-11e7-a940-42010a8c0002   3Gi        RWO           portworx-sc-rep2   57s
+data-kafka-2   Bound     pvc-d2388861-7c4b-11e7-a940-42010a8c0002   3Gi        RWO           portworx-sc-rep2   48s
+
+/opt/pwx/bin/pxctl v l
+
+ID                      NAME                                            SIZE    HA      SHARED  ENCRYPTED       IO_PRIORITY     SCALE   STATUS
+523341158152507227      pvc-0e7a636d-7b7b-11e7-a940-42010a8c0002        3 GiB   1       no      no              LOW             0       up - attached on 10.140.0.4
+816480848884203913      pvc-b79e96e9-7b79-11e7-a940-42010a8c0002        3 GiB   1       no      no              LOW             0       up - attached on 10.140.0.5
+262949240358217536      pvc-c405b033-7c4b-11e7-a940-42010a8c0002        3 GiB   2       no      no              LOW             0       up - attached on 10.140.0.3
+733731201475618092      pvc-cc70447a-7c4b-11e7-a940-42010a8c0002        3 GiB   2       no      no              LOW             0       up - attached on 10.140.0.5
+360663112422496357      pvc-d2388861-7c4b-11e7-a940-42010a8c0002        3 GiB   2       no      no              LOW             0       up - attached on 10.140.0.4
+168733173797215691      pvc-faaedef8-7b7a-11e7-a940-42010a8c0002        3 GiB   1       no      no              LOW             0       up - attached on 10.140.0.3
+
+/opt/pwx/bin/pxctl v i pvc-c405b033-7c4b-11e7-a940-42010a8c0002
+
+Volume  :  262949240358217536
+        Name                     :  pvc-c405b033-7c4b-11e7-a940-42010a8c0002
+        Size                     :  3.0 GiB
+        Format                   :  ext4
+        HA                       :  2
+        IO Priority              :  LOW
+        Creation time            :  Aug 8 15:10:51 UTC 2017
+        Shared                   :  no
+        Status                   :  up
+        State                    :  Attached: k8s-2
+        Device Path              :  /dev/pxd/pxd262949240358217536
+        Labels                   :  pvc=data-kafka-0
+        Reads                    :  37
+        Reads MS                 :  8
+        Bytes Read               :  372736
+        Writes                   :  354
+        Writes MS                :  3096
+        Bytes Written            :  53641216
+        IOs in progress          :  0
+        Bytes used               :  65 MiB
+        Replica sets on nodes:
+                Set  0
+                        Node     :  10.140.0.5
+                        Node     :  10.140.0.3
+
+</code></pre></div></div>
+<h4 id="verifying-the-kafka-installation">Verifying the Kafka installation</h4>
+
+<p>Find the Kafka brokers</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>for i in 0 1 2; do kubectl exec -n kafka kafka-$i -- hostname -f; done
+
+kafka-0.broker.kafka.svc.cluster.local
+kafka-1.broker.kafka.svc.cluster.local
+kafka-2.broker.kafka.svc.cluster.local
+</code></pre></div></div>
+
+<p>Create a topic with 3 partitions and which has a replication factor of 3</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl exec -n kafka -it kafka-0 -- bash 
+
+bin/kafka-topics.sh --zookeeper zk-headless.default.svc.cluster.local:2181 --create --if-not-exists --topic px-kafka-topic --partitions 3 --replication-factor 3
+
+Created topic "px-kafka-topic".
+
+bin/kafka-topics.sh --list --zookeeper zk-headless.default.svc.cluster.local:2181
+px-kafka-topic
+
+bin/kafka-topics.sh --describe --zookeeper zk-headless.default.svc.cluster.local:2181 --topic px-kafka-topic
+
+Topic:px-kafka-topic    PartitionCount:3        ReplicationFactor:3     Configs:
+Topic: px-kafka-topic   Partition: 0    Leader: 0       Replicas: 0,1,2 Isr: 0,1,2
+Topic: px-kafka-topic   Partition: 1    Leader: 1       Replicas: 1,2,0 Isr: 1,2,0
+Topic: px-kafka-topic   Partition: 2    Leader: 2       Replicas: 2,0,1 Isr: 2,0,1
+
+</code></pre></div></div>
+
+<p>Publish messages on the topic</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bin/kafka-console-producer.sh --broker-list kafka-0.broker.kafka.svc.cluster.local:9092,kafka-1.broker.kafka.svc.cluster.local:9092,kafka-2.broker.kafka.svc.cluster.local:9092 --topic px-kafka-topic
+
+&gt;Hello Kubernetes!
+&gt;This is Portworx saying hello            
+&gt;Kafka says, I am just a messenger 
+
+</code></pre></div></div>
+
+<p>Consume messages from the topic</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bin/kafka-console-consumer.sh --zookeeper zk-headless.default.svc.cluster.local:2181 —topic px-kafka-topic --from-beginning
+
+This is Portworx saying hello
+Hello Kubernetes!
+Kafka says, I am just a messenger
+</code></pre></div></div>
+
+<h2 id="scaling">Scaling</h2>
+
+<p>Portworx runs as a Daemonset in Kubernetes. Hence when you add a new node to your kuberentes cluster you do not need to explicitly run Portworx on it.</p>
+
+<p>If you did use the <a href="https://github.com/portworx/terraporx">Terraform scripts</a> to create a kubernetes cluster, you would need to update the minion count and apply the changes via Terraform to add a new Node.</p>
+
+<p>Portworx Cluster before scaling the kubernetes nodes.</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/opt/pwx/bin/pxctl c l
+Cluster ID: px-kafka-cluster
+Cluster UUID: 99c0fa42-03f5-4d05-a2fe-52d914ff39d2
+Status: OK
+
+Nodes in the cluster:
+ID      DATA IP         CPU             MEM TOTAL       MEM FREE        CONTAINERS      VERSION         STATUS
+k8s-0   10.140.0.5      8.717949        3.9 GB          2.3 GB          N/A             1.2.9-17d16e4   Online
+k8s-1   10.140.0.3      4.081633        3.9 GB          2.2 GB          N/A             1.2.9-17d16e4   Online
+k8s-2   10.140.0.4      9.5             3.9 GB          2.2 GB          N/A             1.2.9-17d16e4   Online
+
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get nodes -o wide
+NAME         STATUS    AGE       VERSION   EXTERNAL-IP   OS-IMAGE       KERNEL-VERSION
+k8s-0        Ready     2d        v1.7.0    &lt;none&gt;        Ubuntu 16.10   4.8.0-56-generic
+k8s-1        Ready     2d        v1.7.0    &lt;none&gt;        Ubuntu 16.10   4.8.0-56-generic
+k8s-2        Ready     2d        v1.7.0    &lt;none&gt;        Ubuntu 16.10   4.8.0-56-generic
+k8s-3        Ready     19h       v1.7.0    &lt;none&gt;        Ubuntu 16.10   4.8.0-56-generic
+k8s-master   Ready     2d        v1.7.0    &lt;none&gt;        Ubuntu 16.10   4.8.0-56-generic
+</code></pre></div></div>
+
+<p>Portworx scales along with your cluster.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/opt/pwx/bin/pxctl status
+Status: PX is operational
+License: Trial (expires in 28 days)
+Node ID: k8s-1
+        IP: 10.140.0.4
+        Local Storage Pool: 1 pool
+        POOL    IO_PRIORITY     RAID_LEVEL      USABLE  USED    STATUS  ZONE    REGION
+        0       MEDIUM          raid0           10 GiB  594 MiB Online  default default
+        Local Storage Devices: 1 device
+        Device  Path            Media Type              Size            Last-Scan
+        0:1     /dev/sdb        STORAGE_MEDIUM_SSD      10 GiB          07 Aug 17 12:48 UTC
+        total                   -                       10 GiB
+Cluster Summary
+        Cluster ID: px-kafka-cluster
+        Cluster UUID: 819e722c-cb51-4f5f-9ac6-f99420435a90
+        IP              ID      Used    Capacity        Status
+        10.140.0.4      k8s-1   594 MiB 10 GiB          Online (This node)
+        10.140.0.3      k8s-2   594 MiB 10 GiB          Online
+        10.140.0.5      k8s-0   655 MiB 10 GiB          Online
+        10.140.0.6      k8s-3   338 MiB 10 GiB          Online
+Global Storage Pool
+        Total Used      :  2.1 GiB
+        Total Capacity  :  40 GiB
+	
+/opt/pwx/bin/pxctl c l
+Cluster ID: px-kafka-cluster
+Cluster UUID: 99c0fa42-03f5-4d05-a2fe-52d914ff39d2
+Status: OK
+
+Nodes in the cluster:
+ID      DATA IP         CPU             MEM TOTAL       MEM FREE        CONTAINERS      VERSION         STATUS
+k8s-1   10.140.0.4      8.163265        3.9 GB          2.2 GB          N/A             1.2.9-17d16e4   Online
+k8s-2   10.140.0.3      6.565657        3.9 GB          2.2 GB          N/A             1.2.9-17d16e4   Online
+k8s-0   10.140.0.5      4.102564        3.9 GB          2.3 GB          N/A             1.2.9-17d16e4   Online
+k8s-3   10.140.0.6      4.040404        3.9 GB          3.4 GB          N/A             1.2.9-17d16e4   Online
+</code></pre></div></div>
+
+<p>Scale the Kafka cluster.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl scale -n kafka sts kafka --replicas=4
+statefulset "kafka" scaled
+
+kubectl get pods -n kafka -l "app=kafka" -w
+NAME      READY     STATUS            RESTARTS   AGE
+kafka-0   1/1       Running           0          3h
+kafka-1   1/1       Running           0          3h
+kafka-2   1/1       Running           0          3h
+kafka-3   0/1       PodInitializing   0          24s
+kafka-3   0/1       Running           0          32s
+kafka-3   1/1       Running           0          34s
+
+kubectl get pvc -n kafka
+NAME           STATUS    VOLUME                                     CAPACITY   ACCESSMODES   STORAGECLASS       AGE
+data-kafka-0   Bound     pvc-c405b033-7c4b-11e7-a940-42010a8c0002   3Gi        RWO           portworx-sc-rep2   3h
+data-kafka-1   Bound     pvc-cc70447a-7c4b-11e7-a940-42010a8c0002   3Gi        RWO           portworx-sc-rep2   3h
+data-kafka-2   Bound     pvc-d2388861-7c4b-11e7-a940-42010a8c0002   3Gi        RWO           portworx-sc-rep2   3h
+data-kafka-3   Bound     pvc-df82a9b0-7c68-11e7-a940-42010a8c0002   3Gi        RWO           portworx-sc-rep2   6m
+
+</code></pre></div></div>
+
+<p>Verify that the newly created kafka broker is part of the cluster.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl exec -n kafka -it kafka-0 -- bash
+
+&gt;zkCli.sh
+
+[zk: localhost:2181(CONNECTED) 0] ls /brokers/ids
+
+[0, 1, 2, 3]
+
+[zk: localhost:2181(CONNECTED) 1] ls /brokers/topics
+
+[px-kafka-topic]
+
+[zk: localhost:2181(CONNECTED) 2] get /brokers/ids/3
+
+{"listener_security_protocol_map":{"PLAINTEXT":"PLAINTEXT"},"endpoints":["PLAINTEXT://kafka-3.broker.kafka.svc.cluster.local:9092"],"jmx_port":-1,"host":"kafka-3.broker.kafka.svc.cluster.local","timestamp":"1502217586002","port":9092,"version":4}
+cZxid = 0x1000000e9
+ctime = Tue Aug 08 18:39:46 UTC 2017
+mZxid = 0x1000000e9
+mtime = Tue Aug 08 18:39:46 UTC 2017
+pZxid = 0x1000000e9
+cversion = 0
+dataVersion = 0
+aclVersion = 0
+ephemeralOwner = 0x25dbd0e499e000b
+dataLength = 246
+numChildren = 0
+
+</code></pre></div></div>
+
+<h2 id="failover">Failover</h2>
+
+<h3 id="pod-failover-for-zookeeper">Pod Failover for Zookeeper</h3>
+
+<p>Killing the zookeeper java process in the container terminates the pod. You could alternatively delete the pod as well. 
+Portworx volumes provides durable storage to the Zookeeper pods which are run as a statefulset. 
+Get the earlier inserted value from zookeeper to verify the same.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl exec zk-0 -- pkill java
+
+kubectl get pod -w -l "app=zk"
+NAME      READY     STATUS    RESTARTS   AGE
+zk-0      1/1       Running   0          1d
+zk-1      1/1       Running   0          1d
+zk-2      1/1       Running   0          1d
+zk-0      0/1       Error     0          1d
+zk-0      0/1       Running   1          1d
+zk-0      1/1       Running   1          1d
+
+kubectl exec zk-0 -- zkCli.sh get /foo
+
+WATCHER::
+WatchedEvent state:SyncConnected type:None path:null
+bar
+cZxid = 0x10000004d
+ctime = Tue Aug 08 14:18:11 UTC 2017
+mZxid = 0x10000004d
+mtime = Tue Aug 08 14:18:11 UTC 2017
+pZxid = 0x10000004d
+cversion = 0
+dataVersion = 0
+aclVersion = 0
+ephemeralOwner = 0x0
+dataLength = 3
+numChildren = 0
+
+
+</code></pre></div></div>
+<h3 id="pod-failover-for-kafka">Pod Failover for Kafka</h3>
+
+<p>Find the hosts of the running kafka cluster, cordon a node so that pods are scheduled on it. Kill a kafka pod and notice that it is scheduled on a newer node, joining the cluster back again with durable storage which is backed by the PX volume.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get pods -n kafka -o wide
+NAME      READY     STATUS    RESTARTS   AGE       IP           NODE
+kafka-0   1/1       Running   0          21h       10.0.160.3   k8s-2
+kafka-1   1/1       Running   0          21h       10.0.192.3   k8s-0
+kafka-2   1/1       Running   0          21h       10.0.64.4    k8s-1
+kafka-3   1/1       Running   0          18h       10.0.112.1   k8s-3
+
+kubectl cordon k8s-0
+node "k8s-0" cordoned
+
+kubectl get nodes
+NAME         STATUS                     AGE       VERSION
+k8s-0        Ready,SchedulingDisabled   2d        v1.7.0
+k8s-1        Ready                      2d        v1.7.0
+k8s-2        Ready                      2d        v1.7.0
+k8s-3        Ready                      19h       v1.7.0
+k8s-master   Ready                      2d        v1.7.0
+
+kubectl get pvc -n kafka | grep data-kafka-1
+data-kafka-1   Bound     pvc-cc70447a-7c4b-11e7-a940-42010a8c0002   3Gi        RWO           portworx-sc-rep2   22h
+
+/opt/pwx/bin/pxctl v l | grep pvc-cc70447a-7c4b-11e7-a940-42010a8c0002
+733731201475618092      pvc-cc70447a-7c4b-11e7-a940-42010a8c0002        3 GiB   2       no      no              LOW             0       up - attached on 10.140.0.5
+
+
+kubectl exec -n kafka -it kafka-0 -- bash 
+
+bin/kafka-topics.sh --describe --zookeeper zk-headless.default.svc.cluster.local:2181 --topic px-kafka-topic
+
+Topic:px-kafka-topic    PartitionCount:3        ReplicationFactor:3     Configs:
+        Topic: px-kafka-topic   Partition: 0    Leader: 0       Replicas: 0,1,2 Isr: 0,1,2
+        Topic: px-kafka-topic   Partition: 1    Leader: 1       Replicas: 1,2,0 Isr: 1,2,0
+        Topic: px-kafka-topic   Partition: 2    Leader: 2       Replicas: 2,0,1 Isr: 2,0,1
+
+
+kubectl delete po/kafka-1 -n kafka
+pod "kafka-1" deleted
+
+kubectl get pods -n kafka -w
+NAME      READY     STATUS        RESTARTS   AGE
+kafka-0   1/1       Running           0         22h
+kafka-1   0/1       Terminating       0         22h
+kafka-2   1/1       Running           0         22h
+kafka-3   1/1       Running           0         18h
+kafka-1   0/1       Terminating       0         22h
+kafka-1   0/1       Terminating       0         22h
+kafka-1   0/1       Pending           0         0s
+kafka-1   0/1       Pending           0         0s
+kafka-1   0/1       Init:0/1          0         0s
+kafka-1   0/1       Init:0/1          0         2s
+kafka-1   0/1       PodInitializing   0         3s
+kafka-1   0/1       Running           0         5s
+kafka-1   1/1       Running           0         11s
+
+kubectl get pods -n kafka -o wide
+NAME      READY     STATUS    RESTARTS   AGE       IP           NODE
+kafka-0   1/1       Running   0          22h       10.0.160.3   k8s-2
+kafka-1   1/1       Running   0          1m        10.0.112.2   k8s-3
+kafka-2   1/1       Running   0          22h       10.0.64.4    k8s-1
+kafka-3   1/1       Running   0          18h       10.0.112.1   k8s-3
+
+bin/kafka-topics.sh --describe --zookeeper zk-headless.default.svc.cluster.local:2181 --topic px-kafka-topic
+
+Topic:px-kafka-topic    PartitionCount:3        ReplicationFactor:3     Configs:
+Topic: px-kafka-topic   Partition: 0    Leader: 0       Replicas: 0,1,2 Isr: 0,2,1
+Topic: px-kafka-topic   Partition: 1    Leader: 1       Replicas: 1,2,0 Isr: 2,0,1
+Topic: px-kafka-topic   Partition: 2    Leader: 2       Replicas: 2,0,1 Isr: 2,0,1
+
+</code></pre></div></div>
+
+<h3 id="node-failover">Node Failover</h3>
+
+<p>In the case of a statefulset if the node is unreachable, which could happen in either of two cases</p>
+<ul>
+  <li>The node is down for maintenance</li>
+  <li>There has been a network partition.</li>
+</ul>
+
+<p>There is no way for kubernetes to know which of the case is it. Hence Kubernetes would not schedule the Statefulset and the pods running on those nodes would enter the ‘Terminating’ or ‘Unknown’ state after a timeout. 
+If there was a network partition and when the partition heals, kubernetes will complete the deletion of the Pod and remove it from the API server. It would subsequently schedule a new pod to honor the replication requirements mentioned in the Podspec.</p>
+
+<p>For further information : <a href="https://kubernetes.io/docs/tasks/run-application/force-delete-stateful-set-pod/">Statefulset Pod Deletion</a></p>
+
+<p>Decomissioning a kubernetes node deletes the node object form the APIServer. 
+Before that you would want to decomission your Portworx node from the cluster. 
+Follow the steps mentioned in <a href="https://docs.portworx.com/scheduler/kubernetes/k8s-node-decommission.html">Decommision a Portworx node</a> 
+Once done, delete the kubernetes node if it requires to be deleted permanently.</p>
+
+
+        </div>
+
+    </body>
+</html>
